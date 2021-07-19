@@ -22,36 +22,32 @@ class HomeForecast extends StatefulWidget {
 }
 
 class _HomeForecastState extends State<HomeForecast> {
-  ForecastData _forecastData = ForecastData();
+  late Future<ForecastData> futureData;
 
   String _result = 'loading...';
 
-  void getText() {
-    final response = _forecastData.fetchData();
-    response.then((value) {
-      if (value.statusCode == 200) {
-        setState(() {
-          _result = value.body;
-        });
-      } else {
-        setState(() {
-          _result = 'Status code = ' + value.statusCode.toString();
-        });
-      }
-    }, onError: (e) {
-      setState(() {
-        _result = 'HTTP error';
-      });
-    });
-  }
-
   @override
   void initState() {
-    getText();
+    super.initState();
+    futureData = fetchForecastData();
   }
 
   @override
   Widget build(BuildContext context) {
-    return Text(_result);
+    return FutureBuilder<ForecastData>(
+      future: futureData,
+      builder: (context, snapshot) {
+        if (snapshot.hasData) {
+          if (snapshot.data!.ready) {
+            return Text(snapshot.data!.currentData.temp.toString() + ' ºF');
+          } else {
+            return Text('Error:\n${snapshot.data!.statusCode}');
+          }
+        } else if (snapshot.hasError) {
+          return Text('${snapshot.error}');
+        }
+        return const CircularProgressIndicator();
+      },
+    );
   }
 }
