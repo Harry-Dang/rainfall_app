@@ -42,6 +42,10 @@ dependencies:
   # Hide Env variables
   envify: any
 
+  # Geocoding
+  # Used for finding location
+  geocoding: ^2.0.0
+
 dev_dependencies:
   flutter_test:
     sdk: flutter
