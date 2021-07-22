@@ -3,7 +3,8 @@ import 'package:flutter_svg/flutter_svg.dart';
 
 const String weatherIcons = 'assets/icons/weather/';
 
-Widget getIcon(id, isDay, {width = 90.0, height = 90.0}) {
+Widget getIcon(int id, bool isDay,
+    {double width = 90.0, double height = 90.0}) {
   if (id == 800) {
     if (isDay) {
       return SvgPicture.asset(
@@ -83,6 +84,6 @@ Widget getIcon(id, isDay, {width = 90.0, height = 90.0}) {
   }
 }
 
-bool isDay(currentTime, sunrise, sunset) {
+bool isDay(DateTime currentTime, DateTime sunrise, DateTime sunset) {
   return !(currentTime.isBefore(sunrise) || currentTime.isAfter(sunset));
 }

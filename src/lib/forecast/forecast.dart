@@ -5,18 +5,25 @@ import 'package:geocoding/geocoding.dart';
 
 import 'package:src/env/env.dart';
 
-Future<ForecastData> fetchForecastData(lat, long) async {
+const hours = 12;
+
+Future<ForecastData> fetchForecastData(double lat, double long) async {
   final response = await http.get(Uri.parse(
       'https://api.openweathermap.org/data/2.5/onecall?lat=${lat.toString()}&lon=${long.toString()}&appid=' +
           Env.openweather +
           '&units=imperial'));
   if (response.statusCode == 200) {
     dynamic data = jsonDecode(response.body);
+    List<HourlyForecast> hourly = [];
+    for (int i = 0; i < hours; i++) {
+      hourly.add(HourlyForecast.fromJson(data['hourly'][i]));
+    }
     return ForecastData(
         response.statusCode,
         CurrentData.fromJson(data['current']),
         CurrentInfo(
-            await placemarkFromCoordinates(lat, long), data['current']['dt']));
+            await placemarkFromCoordinates(lat, long), data['current']['dt']),
+        hourly);
   } else {
     return ForecastData(response.statusCode);
   }
@@ -27,11 +34,13 @@ class ForecastData {
   bool ready = false;
   late CurrentData currentData;
   late CurrentInfo currentInfo;
+  late List<HourlyForecast> hourlyData;
 
-  ForecastData(this.statusCode, [current, info]) {
+  ForecastData(this.statusCode, [current, info, hourly]) {
     ready = statusCode == 200;
     currentData = current;
     currentInfo = info;
+    hourlyData = hourly;
   }
 }
 
@@ -71,5 +80,26 @@ class CurrentInfo {
     location =
         currentLocation.locality! + ', ' + currentLocation.administrativeArea!;
     date = DateTime.fromMillisecondsSinceEpoch(dt * 1000);
+  }
+}
+
+class HourlyForecast {
+  DateTime time;
+  double temp;
+  int rain;
+  int id;
+
+  HourlyForecast(
+      {required this.time,
+      required this.temp,
+      required this.rain,
+      required this.id});
+
+  factory HourlyForecast.fromJson(Map<String, dynamic> json) {
+    return HourlyForecast(
+        time: DateTime.fromMillisecondsSinceEpoch(json['dt'] * 1000),
+        temp: json['temp'],
+        rain: json['pop'],
+        id: json['weather'][0]['id']);
   }
 }

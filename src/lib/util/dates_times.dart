@@ -1,4 +1,4 @@
-String getDate(date) {
+String getDate(DateTime date) {
   const months = [
     'January',
     'February',
@@ -16,7 +16,7 @@ String getDate(date) {
   return months[date.month - 1] + ' ' + date.day.toString();
 }
 
-String getTime(date) {
+String getTime(DateTime date) {
   String minute =
       date.minute < 10 ? '0' + date.minute.toString() : date.minute.toString();
   String hour;
@@ -32,4 +32,14 @@ String getTime(date) {
     period = 'PM';
   }
   return hour + ':' + minute + ' ' + period;
+}
+
+String getHour(DateTime date) {
+  if (date.hour == 0) {
+    return '12 AM';
+  } else if (date.hour < 12) {
+    return date.hour.toString() + ' AM';
+  } else {
+    return (date.hour - 12).toString() + ' PM';
+  }
 }

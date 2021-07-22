@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_svg/flutter_svg.dart';
 
 import 'package:src/forecast/forecast.dart';
 import 'package:src/util/dates_times.dart';
@@ -49,8 +48,13 @@ class _HomeForecastState extends State<HomeForecast> {
             //     '\n' +
             //     snapshot.data!.currentData.temp.toString() +
             //     ' ºF');
-            return Header.fromData(
-                snapshot.data!.currentData, snapshot.data!.currentInfo);
+            return ListView(
+              children: [
+                Header.fromData(
+                    snapshot.data!.currentData, snapshot.data!.currentInfo),
+                Body.fromData(snapshot.data!)
+              ],
+            );
           } else {
             return Text('Error:\n${snapshot.data!.statusCode}');
           }
@@ -66,7 +70,7 @@ class _HomeForecastState extends State<HomeForecast> {
 class Header extends StatelessWidget {
   Header({Key? key}) : super(key: key);
 
-  Header.fromData(currentData, currentInfo) {
+  Header.fromData(CurrentData currentData, CurrentInfo currentInfo) {
     _location = currentInfo.location;
     _date = getDate(currentInfo.date);
     _time = getTime(currentInfo.date);
@@ -97,26 +101,30 @@ class Header extends StatelessWidget {
           style: const TextStyle(fontSize: 18),
         )));
     // current date and time
-    final info = Column(children: [
-      Container(
-          padding: const EdgeInsets.all(1),
-          margin: const EdgeInsets.only(right: 96),
-          child: Text(
-            _date,
-            style: const TextStyle(fontSize: 12),
-          )),
-      Container(
-        padding: const EdgeInsets.all(1),
-        margin: const EdgeInsets.only(right: 96),
-        child: Text(
-          _time,
-          style: const TextStyle(fontSize: 12),
-        ),
-      )
-    ]);
+    final info = Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisAlignment: MainAxisAlignment.start,
+        children: [
+          Container(
+              padding: const EdgeInsets.all(1),
+              child: Align(
+                  alignment: Alignment.topLeft,
+                  child: Text(
+                    _date,
+                    style: const TextStyle(fontSize: 12),
+                  ))),
+          Container(
+              padding: const EdgeInsets.all(1),
+              child: Align(
+                alignment: Alignment.topLeft,
+                child: Text(
+                  _time,
+                  style: const TextStyle(fontSize: 12),
+                ),
+              ))
+        ]);
     // current temperature
     final temperature = Column(
-      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
       children: [
         Text(
           _temp.toString() + 'ºF',
@@ -138,22 +146,56 @@ class Header extends StatelessWidget {
         Container(
             margin: const EdgeInsets.only(right: 32),
             child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [info, temperature],
             )),
         weather
       ],
     );
-    return Column(
-      children: [locale, current],
-    );
+    return Container(
+        padding: const EdgeInsets.only(top: 10, bottom: 10),
+        child: Column(
+          children: [locale, current],
+        ));
   }
 }
 
 class Body extends StatelessWidget {
-  const Body({Key? key}) : super(key: key);
+  Body({Key? key}) : super(key: key);
+
+  late List<HourlyForecast> _hourlyData;
+
+  Body.fromData(ForecastData forecastData) {
+    _hourlyData = forecastData.hourlyData;
+  }
 
   @override
   Widget build(BuildContext context) {
-    return Container();
+    List<Widget> hours = [];
+    for (int i = 0; i < _hourlyData.length; i++) {
+      hours.add(buildHour(i));
+    }
+    return Column(
+      children: hours,
+    );
+  }
+
+  Widget buildHour(int index) {
+    return Container(
+        padding: const EdgeInsets.only(top: 12, bottom: 12),
+        child: Row(
+          children: [
+            Text(getHour(_hourlyData[index].time)),
+            Container(
+              margin: const EdgeInsets.only(left: 12, right: 12),
+              height: 24,
+              width: 160,
+              decoration: const BoxDecoration(
+                  color: Colors.grey,
+                  borderRadius: BorderRadius.all(Radius.circular(90.0))),
+            ),
+            Text(_hourlyData[index].temp.round().toString() + 'ºF')
+          ],
+        ));
   }
 }
