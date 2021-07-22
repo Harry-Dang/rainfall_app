@@ -98,13 +98,20 @@ class Header extends StatelessWidget {
         )));
     // current date and time
     final info = Column(children: [
-      Text(
-        _date,
-        style: const TextStyle(fontSize: 12),
-      ),
-      Text(
-        _time,
-        style: const TextStyle(fontSize: 12),
+      Container(
+          padding: const EdgeInsets.all(1),
+          margin: const EdgeInsets.only(right: 96),
+          child: Text(
+            _date,
+            style: const TextStyle(fontSize: 12),
+          )),
+      Container(
+        padding: const EdgeInsets.all(1),
+        margin: const EdgeInsets.only(right: 96),
+        child: Text(
+          _time,
+          style: const TextStyle(fontSize: 12),
+        ),
       )
     ]);
     // current temperature
@@ -115,28 +122,38 @@ class Header extends StatelessWidget {
           _temp.toString() + 'ºF',
           style: const TextStyle(fontSize: 72),
         ),
-        Text(
-          'feels like: ' + _feelsLike.toString() + 'ºF',
-          style: const TextStyle(fontSize: 12),
-        )
+        Text('feels like: ' + _feelsLike.toString() + 'ºF')
       ],
     );
     // current weather condition
-    final weather = Column(
-      children: [getIcon(_id, _isDay), Text(_condition)],
-    );
+    final weather = Container(
+        margin: const EdgeInsets.only(left: 32, top: 32),
+        child: Column(
+          children: [getIcon(_id, _isDay), Text(_condition)],
+        ));
     // all current data row
     final current = Row(
       mainAxisAlignment: MainAxisAlignment.spaceEvenly,
       children: [
-        Column(
-          children: [info, temperature],
-        ),
+        Container(
+            margin: const EdgeInsets.only(right: 32),
+            child: Column(
+              children: [info, temperature],
+            )),
         weather
       ],
     );
     return Column(
       children: [locale, current],
     );
+  }
+}
+
+class Body extends StatelessWidget {
+  const Body({Key? key}) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return Container();
   }
 }
