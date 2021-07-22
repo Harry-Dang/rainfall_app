@@ -1,5 +1,5 @@
 name: src
-description: A new Flutter project.
+description: Your weather app.
 
 # The following line prevents the package from being accidentally published to
 # pub.dev using `flutter pub publish`. This is preferred for private packages.
@@ -46,6 +46,10 @@ dependencies:
   # Used for finding location
   geocoding: ^2.0.0
 
+  # Flutter_SVG
+  # Used for displaying SVG icons
+  flutter_svg: ^0.22.0
+
 dev_dependencies:
   flutter_test:
     sdk: flutter
@@ -77,6 +81,8 @@ flutter:
   # assets:
   #   - images/a_dot_burr.jpeg
   #   - images/a_dot_ham.jpeg
+  assets:
+    - assets/icons/weather/
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/assets-and-images/#resolution-aware.

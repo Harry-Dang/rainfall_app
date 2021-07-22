@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/flutter_svg.dart';
+
 import 'package:src/forecast/forecast.dart';
 import 'package:src/util/dates_times.dart';
+import 'package:src/util/weather.dart';
 
 class HomeScreen extends StatelessWidget {
   const HomeScreen({Key? key}) : super(key: key);
@@ -70,6 +73,8 @@ class Header extends StatelessWidget {
     _temp = currentData.temp.round();
     _feelsLike = currentData.feelsLike.round();
     _condition = currentData.weather;
+    _id = currentData.id;
+    _isDay = isDay(currentInfo.date, currentData.sunrise, currentData.sunset);
   }
 
   String _location = 'loading...';
@@ -78,26 +83,51 @@ class Header extends StatelessWidget {
   late int _temp;
   late int _feelsLike;
   late String _condition;
+  late int _id;
+  late bool _isDay;
 
   @override
   Widget build(BuildContext context) {
     // current location
-    final locale = Center(child: Text(_location));
+    final locale = Container(
+        margin: const EdgeInsets.only(top: 30, bottom: 15),
+        child: Center(
+            child: Text(
+          _location,
+          style: const TextStyle(fontSize: 18),
+        )));
     // current date and time
-    final info = Column(children: [Text(_date), Text(_time)]);
+    final info = Column(children: [
+      Text(
+        _date,
+        style: const TextStyle(fontSize: 12),
+      ),
+      Text(
+        _time,
+        style: const TextStyle(fontSize: 12),
+      )
+    ]);
     // current temperature
     final temperature = Column(
+      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
       children: [
-        Text(_temp.toString() + ' ºF'),
-        Text('feels like: ' + _feelsLike.toString() + ' ºF')
+        Text(
+          _temp.toString() + 'ºF',
+          style: const TextStyle(fontSize: 72),
+        ),
+        Text(
+          'feels like: ' + _feelsLike.toString() + 'ºF',
+          style: const TextStyle(fontSize: 12),
+        )
       ],
     );
     // current weather condition
     final weather = Column(
-      children: [Text(_condition)],
+      children: [getIcon(_id, _isDay), Text(_condition)],
     );
     // all current data row
     final current = Row(
+      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
       children: [
         Column(
           children: [info, temperature],

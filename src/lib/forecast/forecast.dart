@@ -39,18 +39,26 @@ class CurrentData {
   double temp;
   double feelsLike;
   String weather;
+  int id;
+  DateTime sunrise;
+  DateTime sunset;
 
-  CurrentData({
-    required this.temp,
-    required this.feelsLike,
-    required this.weather,
-  });
+  CurrentData(
+      {required this.temp,
+      required this.feelsLike,
+      required this.weather,
+      required this.id,
+      required this.sunrise,
+      required this.sunset});
 
   factory CurrentData.fromJson(Map<String, dynamic> json) {
     return CurrentData(
         temp: json['temp'],
         feelsLike: json['feels_like'],
-        weather: json['weather'][0]['main']);
+        weather: json['weather'][0]['main'],
+        id: json['weather'][0]['id'],
+        sunrise: DateTime.fromMillisecondsSinceEpoch(json['sunrise'] * 1000),
+        sunset: DateTime.fromMillisecondsSinceEpoch(json['sunset'] * 1000));
   }
 }
 
