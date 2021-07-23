@@ -184,15 +184,19 @@ class Body extends StatelessWidget {
       widgets.add(buildHour(i));
     }
     widgets.add(buildDetails());
-    List<Widget> dailyForecast = [];
-    for (int i = 0; i < _forecastData.dailyData.length; i++) {
-      dailyForecast.add(buildDaily(i));
-    }
-    widgets.add(Container(
-        padding: const EdgeInsets.only(left: 24, right: 24),
-        child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-            children: dailyForecast)));
+    // List<Widget> dailyForecast = [];
+    // for (int i = 0; i < _forecastData.dailyData.length; i++) {
+    //   dailyForecast.add(buildDaily(i));
+    // }
+    // widgets.add(Container(
+    //     padding: const EdgeInsets.only(left: 24, right: 24),
+    //     child: Row(
+    //         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+    //         children: dailyForecast)));
+    // return Column(
+    //   children: widgets,
+    // );
+    widgets.add(buildDaily());
     return Column(
       children: widgets,
     );
@@ -312,45 +316,64 @@ class Body extends StatelessWidget {
     );
   }
 
-  Widget buildDaily(int index) {
-    DailyForecast dailyData = _forecastData.dailyData[index];
-    String date = getWeekday(dailyData.date);
-    Color? barColor = getBarColor(dailyData.id, true);
-    double barLength = (dailyData.high - dailyData.low) /
-        (_forecastData.dailyMax - _forecastData.dailyMin) *
-        dailyMaxHeight;
+  Widget buildDaily() {
+    List<Widget> dates = [];
+    List<Widget> bars = [];
+    for (int i = 0; i < _forecastData.dailyData.length; i++) {
+      DailyForecast dailyData = _forecastData.dailyData[i];
+      String date = getWeekday(dailyData.date);
+      dates.add(Container(
+          padding: const EdgeInsets.all(4),
+          width: 52,
+          child: Text(
+            date,
+            style: const TextStyle(fontSize: 18),
+            textAlign: TextAlign.center,
+          )));
+      Color? barColor = getBarColor(dailyData.id, true);
+      double barLength = (dailyData.high - dailyData.low) /
+          (_forecastData.dailyMax - _forecastData.dailyMin) *
+          dailyMaxHeight;
+      bars.add(Container(
+        padding: const EdgeInsets.all(4),
+        width: 52,
+        child: Column(
+          children: [
+            Text(dailyData.high.round().toString() + 'ºF'),
+            Container(
+                margin: const EdgeInsets.only(top: 8, bottom: 8),
+                height: barLength,
+                width: 24,
+                decoration: BoxDecoration(
+                  color: barColor,
+                  borderRadius: const BorderRadius.all(Radius.circular(90.0)),
+                  border: Border.all(
+                      color: barColor == Colors.white
+                          ? Colors.grey
+                          : Colors.transparent),
+                )),
+            Text(dailyData.low.round().toString() + 'ºF')
+          ],
+        ),
+      ));
+    }
     return Container(
-      padding: const EdgeInsets.only(top: 8, bottom: 8),
+      padding: const EdgeInsets.all(12),
       child: Column(
         children: [
           Container(
-            padding: const EdgeInsets.all(4),
-            child: Text(
-              date,
-              style: const TextStyle(fontSize: 18),
-            ),
-          ),
+              padding: const EdgeInsets.only(left: 12, right: 12),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                crossAxisAlignment: CrossAxisAlignment.end,
+                children: dates,
+              )),
           Container(
-            child: Column(
-              children: [
-                Text(dailyData.high.round().toString() + 'ºF'),
-                Container(
-                    margin: const EdgeInsets.only(top: 8, bottom: 8),
-                    height: barLength,
-                    width: 24,
-                    decoration: BoxDecoration(
-                      color: barColor,
-                      borderRadius:
-                          const BorderRadius.all(Radius.circular(90.0)),
-                      border: Border.all(
-                          color: barColor == Colors.white
-                              ? Colors.grey
-                              : Colors.transparent),
-                    )),
-                Text(dailyData.low.round().toString() + 'ºF')
-              ],
-            ),
-          ),
+              padding: const EdgeInsets.only(left: 12, right: 12),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                children: bars,
+              ))
         ],
       ),
     );
