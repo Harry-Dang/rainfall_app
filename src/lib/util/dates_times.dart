@@ -16,6 +16,11 @@ String getDate(DateTime date) {
   return months[date.month - 1] + ' ' + date.day.toString();
 }
 
+String getWeekday(DateTime date) {
+  const days = ['Mon', 'Tues', 'Wed', 'Thurs', 'Fri', 'Sat', 'Sun'];
+  return days[date.weekday - 1];
+}
+
 String getTime(DateTime date) {
   String minute =
       date.minute < 10 ? '0' + date.minute.toString() : date.minute.toString();

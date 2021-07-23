@@ -18,7 +18,7 @@ class RainfallApp extends StatelessWidget {
       ),
       initialRoute: '/',
       routes: {
-        '/': (context) => HomeScreen(),
+        '/': (context) => const HomeScreen(),
         '/settings': (context) => const SettingsScreen(),
       },
     );

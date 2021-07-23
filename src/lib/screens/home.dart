@@ -5,8 +5,10 @@ import 'package:src/forecast/forecast.dart';
 import 'package:src/util/dates_times.dart';
 import 'package:src/util/weather.dart';
 
-const hourlyMinWidth = 48;
-const hourlyMaxWidth = 240;
+const int hourlyMinWidth = 48;
+const int hourlyMaxWidth = 240;
+
+const int dailyMaxHeight = 160;
 
 const String weatherIcons = 'assets/icons/weather/';
 
@@ -177,13 +179,22 @@ class Body extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    List<Widget> hours = [];
+    List<Widget> widgets = [];
     for (int i = 0; i < _forecastData.hourlyData.length; i++) {
-      hours.add(buildHour(i));
+      widgets.add(buildHour(i));
     }
-    hours.add(buildDetails());
+    widgets.add(buildDetails());
+    List<Widget> dailyForecast = [];
+    for (int i = 0; i < _forecastData.dailyData.length; i++) {
+      dailyForecast.add(buildDaily(i));
+    }
+    widgets.add(Container(
+        padding: const EdgeInsets.only(left: 24, right: 24),
+        child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+            children: dailyForecast)));
     return Column(
-      children: hours,
+      children: widgets,
     );
   }
 
@@ -234,12 +245,13 @@ class Body extends StatelessWidget {
           // sunrise sunset
           Container(
             padding: const EdgeInsets.only(left: 12, right: 12),
+            margin: const EdgeInsets.only(top: 6, bottom: 6),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               children: [
                 Row(children: [
                   SvgPicture.asset(weatherIcons + 'sunrise.svg',
-                      width: 60.0, height: 60.0),
+                      width: 48.0, height: 48.0),
                   Container(
                       padding: const EdgeInsets.only(left: 8, right: 8),
                       child: Text(getTime(_forecastData.currentData.sunrise)))
@@ -247,7 +259,7 @@ class Body extends StatelessWidget {
                 Row(
                   children: [
                     SvgPicture.asset(weatherIcons + 'sunset.svg',
-                        width: 60.0, height: 60.0),
+                        width: 48.0, height: 48.0),
                     Container(
                         padding: const EdgeInsets.only(left: 8, right: 8),
                         child: Text(
@@ -259,23 +271,86 @@ class Body extends StatelessWidget {
             ),
           ),
           // high and low
-          //   Container(
-          //     padding: const EdgeInsets.only(left: 12, right: 12),
-          //     child: Row(
-          //       children: [
-          //       Row(children: [
-          //         SvgPicture.asset(weatherIcons + 'warm.svg',
-          //         width: 60.0, height: 60.0),
-          //         Container(
-          //           padding: const EdgeInsets.only(left: 8, right: 8),
-          //           child: Text(
-          //             _forecastData.
-          //           )
-          //         )
-          //       ],)
-          //       ]
-          //       )
-          //   )
+          Container(
+              padding: const EdgeInsets.only(left: 12, right: 12),
+              margin: const EdgeInsets.only(top: 6, bottom: 6),
+              child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                  children: [
+                    Row(
+                      children: [
+                        SvgPicture.asset(weatherIcons + 'warm.svg',
+                            width: 48.0, height: 48.0),
+                        Container(
+                            padding: const EdgeInsets.only(left: 8, right: 8),
+                            child: Text(_forecastData.dailyData[0].high
+                                    .round()
+                                    .toString() +
+                                'ºF'))
+                      ],
+                    ),
+                    Row(
+                      children: [
+                        Row(
+                          children: [
+                            SvgPicture.asset(weatherIcons + 'cold.svg',
+                                width: 48.0, height: 48.0),
+                            Container(
+                                padding:
+                                    const EdgeInsets.only(left: 8, right: 8),
+                                child: Text(_forecastData.dailyData[0].low
+                                        .round()
+                                        .toString() +
+                                    'ºF'))
+                          ],
+                        )
+                      ],
+                    )
+                  ]))
+        ],
+      ),
+    );
+  }
+
+  Widget buildDaily(int index) {
+    DailyForecast dailyData = _forecastData.dailyData[index];
+    String date = getWeekday(dailyData.date);
+    Color? barColor = getBarColor(dailyData.id, true);
+    double barLength = (dailyData.high - dailyData.low) /
+        (_forecastData.dailyMax - _forecastData.dailyMin) *
+        dailyMaxHeight;
+    return Container(
+      padding: const EdgeInsets.only(top: 8, bottom: 8),
+      child: Column(
+        children: [
+          Container(
+            padding: const EdgeInsets.all(4),
+            child: Text(
+              date,
+              style: const TextStyle(fontSize: 18),
+            ),
+          ),
+          Container(
+            child: Column(
+              children: [
+                Text(dailyData.high.round().toString() + 'ºF'),
+                Container(
+                    margin: const EdgeInsets.only(top: 8, bottom: 8),
+                    height: barLength,
+                    width: 24,
+                    decoration: BoxDecoration(
+                      color: barColor,
+                      borderRadius:
+                          const BorderRadius.all(Radius.circular(90.0)),
+                      border: Border.all(
+                          color: barColor == Colors.white
+                              ? Colors.grey
+                              : Colors.transparent),
+                    )),
+                Text(dailyData.low.round().toString() + 'ºF')
+              ],
+            ),
+          ),
         ],
       ),
     );
