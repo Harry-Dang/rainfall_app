@@ -49,6 +49,7 @@ dependencies:
   # Flutter_SVG
   # Used for displaying SVG icons
   flutter_svg: ^0.22.0
+  geolocator: ^7.3.1
 
 dev_dependencies:
   flutter_test:

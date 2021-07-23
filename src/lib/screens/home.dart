@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+
 import 'package:flutter_svg/flutter_svg.dart';
 
 import 'package:src/forecast/forecast.dart';
@@ -34,13 +35,13 @@ class HomeForecast extends StatefulWidget {
 
 class _HomeForecastState extends State<HomeForecast> {
   late Future<ForecastData> futureData;
-
-  String _result = 'loading...';
+  bool error = false;
+  late String errorMessage;
 
   @override
   void initState() {
     super.initState();
-    futureData = fetchForecastData(38.328732, -85.764771);
+    futureData = fetchForecastData();
   }
 
   @override
@@ -50,12 +51,6 @@ class _HomeForecastState extends State<HomeForecast> {
       builder: (context, snapshot) {
         if (snapshot.hasData) {
           if (snapshot.data!.ready) {
-            // return Text(snapshot.data!.currentInfo.location +
-            //     '\n' +
-            //     snapshot.data!.currentInfo.date.toString() +
-            //     '\n' +
-            //     snapshot.data!.currentData.temp.toString() +
-            //     ' ºF');
             return ListView(
               children: [
                 Header.fromData(
@@ -184,18 +179,6 @@ class Body extends StatelessWidget {
       widgets.add(buildHour(i));
     }
     widgets.add(buildDetails());
-    // List<Widget> dailyForecast = [];
-    // for (int i = 0; i < _forecastData.dailyData.length; i++) {
-    //   dailyForecast.add(buildDaily(i));
-    // }
-    // widgets.add(Container(
-    //     padding: const EdgeInsets.only(left: 24, right: 24),
-    //     child: Row(
-    //         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-    //         children: dailyForecast)));
-    // return Column(
-    //   children: widgets,
-    // );
     widgets.add(buildDaily());
     return Column(
       children: widgets,

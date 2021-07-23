@@ -2,15 +2,24 @@ import 'dart:convert';
 
 import 'package:http/http.dart' as http;
 import 'package:geocoding/geocoding.dart';
+import 'package:geolocator/geolocator.dart';
 
 import 'package:src/env/env.dart';
+import 'package:src/location/location.dart';
 
 const hours = 12;
 const days = 6;
 
-Future<ForecastData> fetchForecastData(double lat, double long) async {
+Future<ForecastData> fetchForecastData() async {
+  Position position = await getCurrentLocation();
+  print(position.latitude);
+  print(position.longitude);
   final response = await http.get(Uri.parse(
-      'https://api.openweathermap.org/data/2.5/onecall?lat=${lat.toString()}&lon=${long.toString()}&appid=' +
+      'https://api.openweathermap.org/data/2.5/onecall?lat=' +
+          position.latitude.toString() +
+          '&lon=' +
+          position.longitude.toString() +
+          '&appid=' +
           Env.openweather +
           '&units=imperial'));
   if (response.statusCode == 200) {
@@ -43,7 +52,9 @@ Future<ForecastData> fetchForecastData(double lat, double long) async {
         response.statusCode,
         CurrentData.fromJson(data['current']),
         CurrentInfo(
-            await placemarkFromCoordinates(lat, long), data['current']['dt']),
+            await placemarkFromCoordinates(
+                position.latitude, position.longitude),
+            data['current']['dt']),
         hourly,
         daily);
     result.hourlyMin = hourlyMin!;
