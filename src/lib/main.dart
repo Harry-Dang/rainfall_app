@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:src/screens/home.dart';
+import 'package:src/screens/search.dart';
 import 'package:src/screens/settings.dart';
 
 void main() {
@@ -20,6 +21,7 @@ class RainfallApp extends StatelessWidget {
       routes: {
         '/': (context) => const HomeScreen(),
         '/settings': (context) => const SettingsScreen(),
+        '/search': (context) => const SearchScreen()
       },
     );
   }

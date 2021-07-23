@@ -19,10 +19,11 @@ class HomeScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return const Scaffold(
-      body: Center(
+        body: SafeArea(
+      child: Center(
         child: HomeForecast(),
       ),
-    );
+    ));
   }
 }
 
@@ -53,6 +54,7 @@ class _HomeForecastState extends State<HomeForecast> {
           if (snapshot.data!.ready) {
             return ListView(
               children: [
+                const Topbar(),
                 Header.fromData(
                     snapshot.data!.currentData, snapshot.data!.currentInfo),
                 Body.fromData(snapshot.data!)
@@ -365,5 +367,30 @@ class Body extends StatelessWidget {
         ],
       ),
     );
+  }
+}
+
+class Topbar extends StatelessWidget {
+  const Topbar({Key? key}) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+        child: Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        Container(
+            padding: const EdgeInsets.all(8), child: const Icon(Icons.search)),
+        GestureDetector(
+          onTap: () {
+            Navigator.pushNamed(context, '/settings');
+          },
+          child: Container(
+            padding: const EdgeInsets.all(8),
+            child: const Icon(Icons.settings),
+          ),
+        )
+      ],
+    ));
   }
 }
