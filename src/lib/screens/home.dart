@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 
 import 'package:src/forecast/forecast.dart';
 import 'package:src/util/dates_times.dart';
@@ -6,6 +7,8 @@ import 'package:src/util/weather.dart';
 
 const hourlyMinWidth = 48;
 const hourlyMaxWidth = 240;
+
+const String weatherIcons = 'assets/icons/weather/';
 
 class HomeScreen extends StatelessWidget {
   const HomeScreen({Key? key}) : super(key: key);
@@ -97,7 +100,7 @@ class Header extends StatelessWidget {
   Widget build(BuildContext context) {
     // current location
     final locale = Container(
-        margin: const EdgeInsets.only(top: 30, bottom: 15),
+        margin: const EdgeInsets.only(bottom: 15),
         child: Center(
             child: Text(
           _location,
@@ -166,40 +169,50 @@ class Header extends StatelessWidget {
 class Body extends StatelessWidget {
   Body({Key? key}) : super(key: key);
 
-  late List<HourlyForecast> _hourlyData;
-  late double _min;
-  late double _max;
+  late ForecastData _forecastData;
 
   Body.fromData(ForecastData forecastData) {
-    _hourlyData = forecastData.hourlyData;
-    _min = forecastData.hourlyMin;
-    _max = forecastData.hourlyMax;
+    _forecastData = forecastData;
   }
 
   @override
   Widget build(BuildContext context) {
     List<Widget> hours = [];
-    for (int i = 0; i < _hourlyData.length; i++) {
+    for (int i = 0; i < _forecastData.hourlyData.length; i++) {
       hours.add(buildHour(i));
     }
+    hours.add(buildDetails());
     return Column(
       children: hours,
     );
   }
 
   Widget buildHour(int index) {
-    double tempBar = (_hourlyData[index].temp - _min) / (_max - _min);
-    Color? barColor = getBarColor(_hourlyData[index].id);
+    List<HourlyForecast> hourlyData = _forecastData.hourlyData;
+    String hour = getHour(hourlyData[index].time);
+    double tempBar = (hourlyData[index].temp - _forecastData.hourlyMin) /
+        (_forecastData.hourlyMax - _forecastData.hourlyMin);
+    Color? barColor = getBarColor(
+        hourlyData[index].id,
+        isDay(hourlyData[index].time, _forecastData.currentData.sunrise,
+            _forecastData.currentData.sunset));
+    String rain = hourlyData[index].rain == 0
+        ? ''
+        : hourlyData[index].rain.toString() + "%";
     return Container(
-        padding: const EdgeInsets.only(top: 12, bottom: 12),
+        padding: EdgeInsets.only(
+            top: 10, bottom: 10, left: hour.length == 5 ? 32 : 40, right: 40),
         child: Row(
           children: [
-            Text(getHour(_hourlyData[index].time)),
+            Text(hour),
             Container(
               margin: const EdgeInsets.only(left: 12, right: 12),
               height: 24,
               width:
                   (hourlyMaxWidth - hourlyMinWidth) * tempBar + hourlyMinWidth,
+              child: Container(
+                  padding: const EdgeInsets.only(left: 8, top: 3),
+                  child: Text(rain)),
               decoration: BoxDecoration(
                   color: barColor,
                   borderRadius: const BorderRadius.all(Radius.circular(90.0)),
@@ -208,8 +221,63 @@ class Body extends StatelessWidget {
                           ? Colors.grey
                           : Colors.transparent)),
             ),
-            Text(_hourlyData[index].temp.round().toString() + 'ºF')
+            Text(hourlyData[index].temp.round().toString() + 'ºF')
           ],
         ));
+  }
+
+  Widget buildDetails() {
+    return Container(
+      padding: const EdgeInsets.only(top: 4, bottom: 4),
+      child: Column(
+        children: [
+          // sunrise sunset
+          Container(
+            padding: const EdgeInsets.only(left: 12, right: 12),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              children: [
+                Row(children: [
+                  SvgPicture.asset(weatherIcons + 'sunrise.svg',
+                      width: 60.0, height: 60.0),
+                  Container(
+                      padding: const EdgeInsets.only(left: 8, right: 8),
+                      child: Text(getTime(_forecastData.currentData.sunrise)))
+                ]),
+                Row(
+                  children: [
+                    SvgPicture.asset(weatherIcons + 'sunset.svg',
+                        width: 60.0, height: 60.0),
+                    Container(
+                        padding: const EdgeInsets.only(left: 8, right: 8),
+                        child: Text(
+                          getTime(_forecastData.currentData.sunset),
+                        ))
+                  ],
+                )
+              ],
+            ),
+          ),
+          // high and low
+          //   Container(
+          //     padding: const EdgeInsets.only(left: 12, right: 12),
+          //     child: Row(
+          //       children: [
+          //       Row(children: [
+          //         SvgPicture.asset(weatherIcons + 'warm.svg',
+          //         width: 60.0, height: 60.0),
+          //         Container(
+          //           padding: const EdgeInsets.only(left: 8, right: 8),
+          //           child: Text(
+          //             _forecastData.
+          //           )
+          //         )
+          //       ],)
+          //       ]
+          //       )
+          //   )
+        ],
+      ),
+    );
   }
 }

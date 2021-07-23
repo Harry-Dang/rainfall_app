@@ -88,14 +88,22 @@ bool isDay(DateTime currentTime, DateTime sunrise, DateTime sunset) {
   return !(currentTime.isBefore(sunrise) || currentTime.isAfter(sunset));
 }
 
-Color? getBarColor(int id) {
+Color? getBarColor(int id, bool isDay) {
   if (id <= 531 && id >= 200) {
+    // rain
     return Colors.blue[300];
   } else if (id <= 622 && id >= 600) {
+    // snow
     return Colors.white;
   } else if (id == 800) {
-    return Colors.yellow[200];
+    // sunny
+    if (isDay) {
+      return Colors.yellow[300];
+    } else {
+      return Colors.purple[900];
+    }
   } else if (id == 801) {
+    // cloudy
     return Colors.grey[300];
   } else if (id == 802) {
     return Colors.grey[400];
@@ -104,6 +112,7 @@ Color? getBarColor(int id) {
   } else if (id == 804) {
     return Colors.grey[600];
   } else if (id >= 701 && id <= 781) {
+    // atmosphere stuff
     return Colors.grey[400];
   } else {
     return Colors.yellow[200];
