@@ -4,6 +4,9 @@ import 'package:src/forecast/forecast.dart';
 import 'package:src/util/dates_times.dart';
 import 'package:src/util/weather.dart';
 
+const hourlyMinWidth = 48;
+const hourlyMaxWidth = 240;
+
 class HomeScreen extends StatelessWidget {
   const HomeScreen({Key? key}) : super(key: key);
 
@@ -164,9 +167,13 @@ class Body extends StatelessWidget {
   Body({Key? key}) : super(key: key);
 
   late List<HourlyForecast> _hourlyData;
+  late double _min;
+  late double _max;
 
   Body.fromData(ForecastData forecastData) {
     _hourlyData = forecastData.hourlyData;
+    _min = forecastData.hourlyMin;
+    _max = forecastData.hourlyMax;
   }
 
   @override
@@ -181,6 +188,8 @@ class Body extends StatelessWidget {
   }
 
   Widget buildHour(int index) {
+    double tempBar = (_hourlyData[index].temp - _min) / (_max - _min);
+    Color? barColor = getBarColor(_hourlyData[index].id);
     return Container(
         padding: const EdgeInsets.only(top: 12, bottom: 12),
         child: Row(
@@ -189,10 +198,15 @@ class Body extends StatelessWidget {
             Container(
               margin: const EdgeInsets.only(left: 12, right: 12),
               height: 24,
-              width: 160,
-              decoration: const BoxDecoration(
-                  color: Colors.grey,
-                  borderRadius: BorderRadius.all(Radius.circular(90.0))),
+              width:
+                  (hourlyMaxWidth - hourlyMinWidth) * tempBar + hourlyMinWidth,
+              decoration: BoxDecoration(
+                  color: barColor,
+                  borderRadius: const BorderRadius.all(Radius.circular(90.0)),
+                  border: Border.all(
+                      color: barColor == Colors.white
+                          ? Colors.grey
+                          : Colors.transparent)),
             ),
             Text(_hourlyData[index].temp.round().toString() + 'ºF')
           ],

@@ -15,15 +15,26 @@ Future<ForecastData> fetchForecastData(double lat, double long) async {
   if (response.statusCode == 200) {
     dynamic data = jsonDecode(response.body);
     List<HourlyForecast> hourly = [];
+    double? min;
+    double? max;
     for (int i = 0; i < hours; i++) {
       hourly.add(HourlyForecast.fromJson(data['hourly'][i]));
+      min = hourly[i].temp <= (min ?? hourly[i].temp)
+          ? hourly[i].temp
+          : (min ?? hourly[i].temp);
+      max = hourly[i].temp >= (max ?? hourly[i].temp)
+          ? hourly[i].temp
+          : (max ?? hourly[i].temp);
     }
-    return ForecastData(
+    ForecastData result = ForecastData(
         response.statusCode,
         CurrentData.fromJson(data['current']),
         CurrentInfo(
             await placemarkFromCoordinates(lat, long), data['current']['dt']),
         hourly);
+    result.setHourlyMin(min!);
+    result.setHourlyMax(max!);
+    return result;
   } else {
     return ForecastData(response.statusCode);
   }
@@ -35,12 +46,22 @@ class ForecastData {
   late CurrentData currentData;
   late CurrentInfo currentInfo;
   late List<HourlyForecast> hourlyData;
+  late double hourlyMin;
+  late double hourlyMax;
 
   ForecastData(this.statusCode, [current, info, hourly]) {
     ready = statusCode == 200;
     currentData = current;
     currentInfo = info;
     hourlyData = hourly;
+  }
+
+  void setHourlyMin(double min) {
+    hourlyMin = min;
+  }
+
+  void setHourlyMax(double max) {
+    hourlyMax = max;
   }
 }
 
