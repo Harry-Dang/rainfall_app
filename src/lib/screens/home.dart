@@ -188,8 +188,9 @@ class Body extends StatelessWidget {
   Widget buildHour(int index) {
     List<HourlyForecast> hourlyData = _forecastData.hourlyData;
     String hour = getHour(hourlyData[index].time);
-    double tempBar = (hourlyData[index].temp - _forecastData.hourlyMin) /
-        (_forecastData.hourlyMax - _forecastData.hourlyMin);
+    double tempBar =
+        (hourlyData[index].temp.round() - _forecastData.hourlyMin) /
+            (_forecastData.hourlyMax - _forecastData.hourlyMin);
     Color? barColor = getBarColor(
         hourlyData[index].id,
         isDay(hourlyData[index].time, _forecastData.currentData.sunrise,
@@ -314,11 +315,15 @@ class Body extends StatelessWidget {
             textAlign: TextAlign.center,
           )));
       Color? barColor = getBarColor(dailyData.id, true);
-      double barLength = (dailyData.high - dailyData.low) /
+      double barLength = (dailyData.high.round() - dailyData.low.round()) /
           (_forecastData.dailyMax - _forecastData.dailyMin) *
           dailyMaxHeight;
+      double topPadding = (1 -
+              (dailyData.high - _forecastData.dailyMin) /
+                  (_forecastData.dailyMax - _forecastData.dailyMin)) *
+          dailyMaxHeight;
       bars.add(Container(
-        padding: const EdgeInsets.all(4),
+        padding: EdgeInsets.only(top: topPadding, left: 4, right: 4, bottom: 4),
         width: 52,
         child: Column(
           children: [
@@ -348,13 +353,13 @@ class Body extends StatelessWidget {
               padding: const EdgeInsets.only(left: 12, right: 12),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                crossAxisAlignment: CrossAxisAlignment.end,
                 children: dates,
               )),
           Container(
               padding: const EdgeInsets.only(left: 12, right: 12),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: bars,
               ))
         ],

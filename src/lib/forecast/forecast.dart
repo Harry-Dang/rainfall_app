@@ -12,8 +12,6 @@ const days = 6;
 
 Future<ForecastData> fetchForecastData() async {
   Position position = await getCurrentLocation();
-  print(position.latitude);
-  print(position.longitude);
   final response = await http.get(Uri.parse(
       'https://api.openweathermap.org/data/2.5/onecall?lat=' +
           position.latitude.toString() +
@@ -44,7 +42,7 @@ Future<ForecastData> fetchForecastData() async {
       dailyMin = daily[i].low <= (dailyMin ?? daily[i].low)
           ? daily[i].low
           : (dailyMin ?? daily[i].low);
-      dailyMax = daily[i].high <= (dailyMax ?? daily[i].high)
+      dailyMax = daily[i].high >= (dailyMax ?? daily[i].high)
           ? daily[i].high
           : (dailyMax ?? daily[i].high);
     }
