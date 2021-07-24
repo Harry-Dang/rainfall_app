@@ -52,14 +52,16 @@ class _HomeForecastState extends State<HomeForecast> {
       builder: (context, snapshot) {
         if (snapshot.hasData) {
           if (snapshot.data!.ready) {
-            return ListView(
-              children: [
-                const Topbar(),
-                Header.fromData(
-                    snapshot.data!.currentData, snapshot.data!.currentInfo),
-                Body.fromData(snapshot.data!)
-              ],
-            );
+            return RefreshIndicator(
+                child: ListView(
+                  children: [
+                    const Topbar(),
+                    Header.fromData(
+                        snapshot.data!.currentData, snapshot.data!.currentInfo),
+                    Body.fromData(snapshot.data!)
+                  ],
+                ),
+                onRefresh: () => _refresh());
           } else {
             return Text('Error:\n${snapshot.data!.statusCode}');
           }
@@ -69,6 +71,12 @@ class _HomeForecastState extends State<HomeForecast> {
         return const CircularProgressIndicator();
       },
     );
+  }
+
+  Future<void> _refresh() async {
+    setState(() {
+      futureData = fetchForecastData();
+    });
   }
 }
 

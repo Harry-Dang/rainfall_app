@@ -6,6 +6,7 @@ import 'package:geolocator/geolocator.dart';
 
 import 'package:src/env/env.dart';
 import 'package:src/location/location.dart';
+import 'package:src/util/preferences.dart';
 
 const hours = 12;
 const days = 6;
@@ -19,7 +20,8 @@ Future<ForecastData> fetchForecastData() async {
           position.longitude.toString() +
           '&appid=' +
           Env.openweather +
-          '&units=imperial'));
+          '&units=' +
+          (await isImperial() ? 'imperial' : 'metric')));
   if (response.statusCode == 200) {
     dynamic data = jsonDecode(response.body);
     List<HourlyForecast> hourly = [];

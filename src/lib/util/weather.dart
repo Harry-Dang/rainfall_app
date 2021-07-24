@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:src/util/preferences.dart';
 
 const String weatherIcons = 'assets/icons/weather/';
 
@@ -117,4 +118,9 @@ Color? getBarColor(int id, bool isDay) {
   } else {
     return Colors.yellow[200];
   }
+}
+
+String getUnit() {
+  isImperial().then((value) => value ? 'ºF' : 'ºC');
+  return 'ºF';
 }

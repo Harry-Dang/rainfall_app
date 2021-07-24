@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import 'package:src/util/preferences.dart';
+
 class SettingsScreen extends StatelessWidget {
   const SettingsScreen({Key? key}) : super(key: key);
 
@@ -25,6 +27,16 @@ class _SettingsState extends State<Settings> {
   bool _imperial = true;
 
   @override
+  void initState() {
+    super.initState();
+    isImperial().then((value) {
+      setState(() {
+        _imperial = value;
+      });
+    });
+  }
+
+  @override
   Widget build(BuildContext context) {
     return Column(
       children: [
@@ -34,6 +46,7 @@ class _SettingsState extends State<Settings> {
           onChanged: (bool value) {
             setState(() {
               _imperial = value;
+              setImperial(value);
             });
           },
         ),
