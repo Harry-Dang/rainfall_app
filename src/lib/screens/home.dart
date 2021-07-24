@@ -63,7 +63,7 @@ class _HomeForecastState extends State<HomeForecast> {
                 onRefresh: () {
                   if (snapshot.data!.currentInfo.date
                       .add(const Duration(minutes: 1))
-                      .isAfter(DateTime.now())) {
+                      .isBefore(DateTime.now())) {
                     return _refresh(true);
                   } else {
                     return _refresh(false);
@@ -200,11 +200,17 @@ class _HomeForecastState extends State<HomeForecast> {
         (forecastData.hourlyMax - forecastData.hourlyMin);
     Color? barColor = getBarColor(
         hourlyData[index].id,
-        isDay(hourlyData[index].time, forecastData.currentData.sunrise,
-            forecastData.currentData.sunset));
-    String rain = hourlyData[index].rain == 0
+        isDay(
+            hourlyData[index].time,
+            hourlyData[index].time.day == forecastData.currentInfo.date.day
+                ? forecastData.currentData.sunrise
+                : forecastData.dailyData[1].sunrise,
+            hourlyData[index].time.day == forecastData.currentInfo.date.day
+                ? forecastData.currentData.sunset
+                : forecastData.dailyData[1].sunset));
+    String rain = hourlyData[index].rain <= 0.25
         ? ''
-        : hourlyData[index].rain.toString() + "%";
+        : (hourlyData[index].rain * 100).toInt().toString() + "%";
     return Container(
         padding: EdgeInsets.only(
             top: 10, bottom: 10, left: hour.length == 5 ? 32 : 40, right: 40),

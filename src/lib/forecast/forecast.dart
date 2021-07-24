@@ -120,7 +120,7 @@ class CurrentData {
     return CurrentData(
         temp: json['temp'],
         feelsLike: json['feels_like'],
-        weather: json['weather'][0]['main'],
+        weather: json['weather'][0]['description'],
         id: json['weather'][0]['id'],
         sunrise: DateTime.fromMillisecondsSinceEpoch(json['sunrise'] * 1000),
         sunset: DateTime.fromMillisecondsSinceEpoch(json['sunset'] * 1000));
@@ -155,19 +155,23 @@ class HourlyForecast {
     return HourlyForecast(
         time: DateTime.fromMillisecondsSinceEpoch(json['dt'] * 1000),
         temp: json['temp'].toDouble(),
-        rain: json['pop'],
+        rain: json['pop'].toDouble(),
         id: json['weather'][0]['id']);
   }
 }
 
 class DailyForecast {
   DateTime date;
+  DateTime sunrise;
+  DateTime sunset;
   double high;
   double low;
   int id;
 
   DailyForecast(
       {required this.date,
+      required this.sunrise,
+      required this.sunset,
       required this.high,
       required this.low,
       required this.id});
@@ -175,6 +179,8 @@ class DailyForecast {
   factory DailyForecast.fromJson(Map<String, dynamic> json) {
     return DailyForecast(
         date: DateTime.fromMillisecondsSinceEpoch(json['dt'] * 1000),
+        sunrise: DateTime.fromMillisecondsSinceEpoch(json['sunrise'] * 1000),
+        sunset: DateTime.fromMillisecondsSinceEpoch(json['sunset'] * 1000),
         high: json['temp']['max'].toDouble(),
         low: json['temp']['min'].toDouble(),
         id: json['weather'][0]['id']);
