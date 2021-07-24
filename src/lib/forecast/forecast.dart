@@ -12,6 +12,7 @@ const hours = 12;
 const days = 6;
 
 Future<ForecastData> fetchForecastData() async {
+  bool imperial = await isImperial();
   Position position = await getCurrentLocation();
   final response = await http.get(Uri.parse(
       'https://api.openweathermap.org/data/2.5/onecall?lat=' +
@@ -21,7 +22,7 @@ Future<ForecastData> fetchForecastData() async {
           '&appid=' +
           Env.openweather +
           '&units=' +
-          (await isImperial() ? 'imperial' : 'metric')));
+          (imperial ? 'imperial' : 'metric')));
   if (response.statusCode == 200) {
     dynamic data = jsonDecode(response.body);
     List<HourlyForecast> hourly = [];
@@ -50,6 +51,7 @@ Future<ForecastData> fetchForecastData() async {
     }
     ForecastData result = ForecastData(
         response.statusCode,
+        imperial,
         CurrentData.fromJson(data['current']),
         CurrentInfo(
             await placemarkFromCoordinates(
@@ -63,7 +65,7 @@ Future<ForecastData> fetchForecastData() async {
     result.dailyMax = dailyMax!;
     return result;
   } else {
-    return ForecastData(response.statusCode);
+    return ForecastData(response.statusCode, imperial);
   }
 }
 
@@ -78,8 +80,10 @@ class ForecastData {
   late List<DailyForecast> dailyData;
   late double dailyMin;
   late double dailyMax;
+  late bool isImperial;
 
-  ForecastData(this.statusCode, [current, info, hourly, daily]) {
+  ForecastData(this.statusCode, this.isImperial,
+      [current, info, hourly, daily]) {
     ready = statusCode == 200;
     currentData = current;
     currentInfo = info;
@@ -138,7 +142,7 @@ class CurrentInfo {
 class HourlyForecast {
   DateTime time;
   double temp;
-  int rain;
+  double rain;
   int id;
 
   HourlyForecast(

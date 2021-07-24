@@ -55,10 +55,12 @@ class _HomeForecastState extends State<HomeForecast> {
             return RefreshIndicator(
                 child: ListView(
                   children: [
-                    const Topbar(),
-                    Header.fromData(
-                        snapshot.data!.currentData, snapshot.data!.currentInfo),
-                    Body.fromData(snapshot.data!)
+                    _buildTopBar(),
+                    _buildHeader(snapshot.data!),
+                    // Header.fromData(
+                    //     snapshot.data!.currentData, snapshot.data!.currentInfo),
+                    _buildBody(snapshot.data!)
+                    // Body.fromData(snapshot.data!)
                   ],
                 ),
                 onRefresh: () => _refresh());
@@ -78,133 +80,118 @@ class _HomeForecastState extends State<HomeForecast> {
       futureData = fetchForecastData();
     });
   }
-}
 
-class Header extends StatelessWidget {
-  Header({Key? key}) : super(key: key);
-
-  Header.fromData(CurrentData currentData, CurrentInfo currentInfo) {
-    _location = currentInfo.location;
-    _date = getDate(currentInfo.date);
-    _time = getTime(currentInfo.date);
-    _temp = currentData.temp.round();
-    _feelsLike = currentData.feelsLike.round();
-    _condition = currentData.weather;
-    _id = currentData.id;
-    _isDay = isDay(currentInfo.date, currentData.sunrise, currentData.sunset);
-  }
-
-  String _location = 'loading...';
-  late String _date;
-  late String _time;
-  late int _temp;
-  late int _feelsLike;
-  late String _condition;
-  late int _id;
-  late bool _isDay;
-
-  @override
-  Widget build(BuildContext context) {
-    // current location
-    final locale = Container(
-        margin: const EdgeInsets.only(bottom: 15),
-        child: Center(
-            child: Text(
-          _location,
-          style: const TextStyle(fontSize: 18),
-        )));
-    // current date and time
-    final info = Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        mainAxisAlignment: MainAxisAlignment.start,
+  Widget _buildTopBar() => Container(
+          child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           Container(
-              padding: const EdgeInsets.all(1),
-              child: Align(
+              padding: const EdgeInsets.all(8),
+              child: const Icon(Icons.search)),
+          GestureDetector(
+            onTap: () {
+              Navigator.pushNamed(context, '/settings');
+            },
+            child: Container(
+              padding: const EdgeInsets.all(8),
+              child: const Icon(Icons.settings),
+            ),
+          )
+        ],
+      ));
+
+  Widget _buildLocale(CurrentInfo currentInfo) => Container(
+      margin: const EdgeInsets.only(bottom: 15),
+      child: Center(
+          child: Text(
+        currentInfo.location,
+        style: const TextStyle(fontSize: 18),
+      )));
+
+  Widget _buildInfo(CurrentInfo currentInfo) => Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisAlignment: MainAxisAlignment.start,
+          children: [
+            Container(
+                padding: const EdgeInsets.all(1),
+                child: Align(
+                    alignment: Alignment.topLeft,
+                    child: Text(
+                      getDate(currentInfo.date),
+                      style: const TextStyle(fontSize: 12),
+                    ))),
+            Container(
+                padding: const EdgeInsets.all(1),
+                child: Align(
                   alignment: Alignment.topLeft,
                   child: Text(
-                    _date,
+                    getTime(currentInfo.date),
                     style: const TextStyle(fontSize: 12),
-                  ))),
+                  ),
+                ))
+          ]);
+
+  Widget _buildTemp(ForecastData forecastData) => Column(
+        children: [
+          Text(
+            forecastData.currentData.temp.round().toString() +
+                getUnit(forecastData.isImperial),
+            style: const TextStyle(fontSize: 72),
+          ),
+          Text('feels like: ' +
+              forecastData.currentData.feelsLike.round().toString() +
+              getUnit(forecastData.isImperial))
+        ],
+      );
+
+  Widget _buildWeather(ForecastData forecastData) => Container(
+      margin: const EdgeInsets.only(left: 32, top: 32),
+      child: Column(
+        children: [
+          getIcon(
+              forecastData.currentData.id,
+              isDay(
+                  forecastData.currentInfo.date,
+                  forecastData.currentData.sunrise,
+                  forecastData.currentData.sunset)),
+          Text(forecastData.currentData.weather)
+        ],
+      ));
+
+  Widget _buildCurrentForecast(ForecastData forecastData) => Row(
+        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+        children: [
           Container(
-              padding: const EdgeInsets.all(1),
-              child: Align(
-                alignment: Alignment.topLeft,
-                child: Text(
-                  _time,
-                  style: const TextStyle(fontSize: 12),
-                ),
-              ))
-        ]);
-    // current temperature
-    final temperature = Column(
-      children: [
-        Text(
-          _temp.toString() + 'ºF',
-          style: const TextStyle(fontSize: 72),
-        ),
-        Text('feels like: ' + _feelsLike.toString() + 'ºF')
-      ],
-    );
-    // current weather condition
-    final weather = Container(
-        margin: const EdgeInsets.only(left: 32, top: 32),
-        child: Column(
-          children: [getIcon(_id, _isDay), Text(_condition)],
-        ));
-    // all current data row
-    final current = Row(
-      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-      children: [
-        Container(
-            margin: const EdgeInsets.only(right: 32),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [info, temperature],
-            )),
-        weather
-      ],
-    );
-    return Container(
-        padding: const EdgeInsets.only(top: 10, bottom: 10),
-        child: Column(
-          children: [locale, current],
-        ));
-  }
-}
+              margin: const EdgeInsets.only(right: 32),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  _buildInfo(forecastData.currentInfo),
+                  _buildTemp(forecastData)
+                ],
+              )),
+          _buildWeather(forecastData)
+        ],
+      );
 
-class Body extends StatelessWidget {
-  Body({Key? key}) : super(key: key);
+  Widget _buildHeader(ForecastData forecastData) => Container(
+      padding: const EdgeInsets.only(top: 10, bottom: 10),
+      child: Column(
+        children: [
+          _buildLocale(forecastData.currentInfo),
+          _buildCurrentForecast(forecastData)
+        ],
+      ));
 
-  late ForecastData _forecastData;
-
-  Body.fromData(ForecastData forecastData) {
-    _forecastData = forecastData;
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    List<Widget> widgets = [];
-    for (int i = 0; i < _forecastData.hourlyData.length; i++) {
-      widgets.add(buildHour(i));
-    }
-    widgets.add(buildDetails());
-    widgets.add(buildDaily());
-    return Column(
-      children: widgets,
-    );
-  }
-
-  Widget buildHour(int index) {
-    List<HourlyForecast> hourlyData = _forecastData.hourlyData;
+  Widget _buildHour(int index, ForecastData forecastData) {
+    List<HourlyForecast> hourlyData = forecastData.hourlyData;
     String hour = getHour(hourlyData[index].time);
-    double tempBar =
-        (hourlyData[index].temp.round() - _forecastData.hourlyMin) /
-            (_forecastData.hourlyMax - _forecastData.hourlyMin);
+    double tempBar = (hourlyData[index].temp.round() - forecastData.hourlyMin) /
+        (forecastData.hourlyMax - forecastData.hourlyMin);
     Color? barColor = getBarColor(
         hourlyData[index].id,
-        isDay(hourlyData[index].time, _forecastData.currentData.sunrise,
-            _forecastData.currentData.sunset));
+        isDay(hourlyData[index].time, forecastData.currentData.sunrise,
+            forecastData.currentData.sunset));
     String rain = hourlyData[index].rain == 0
         ? ''
         : hourlyData[index].rain.toString() + "%";
@@ -230,95 +217,94 @@ class Body extends StatelessWidget {
                           ? Colors.grey
                           : Colors.transparent)),
             ),
-            Text(hourlyData[index].temp.round().toString() + 'ºF')
+            Text(hourlyData[index].temp.round().toString() +
+                getUnit(forecastData.isImperial))
           ],
         ));
   }
 
-  Widget buildDetails() {
-    return Container(
-      padding: const EdgeInsets.only(top: 4, bottom: 4),
-      child: Column(
-        children: [
-          // sunrise sunset
-          Container(
-            padding: const EdgeInsets.only(left: 12, right: 12),
-            margin: const EdgeInsets.only(top: 6, bottom: 6),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-              children: [
-                Row(children: [
-                  SvgPicture.asset(weatherIcons + 'sunrise.svg',
-                      width: 48.0, height: 48.0),
-                  Container(
-                      padding: const EdgeInsets.only(left: 8, right: 8),
-                      child: Text(getTime(_forecastData.currentData.sunrise)))
-                ]),
-                Row(
-                  children: [
-                    SvgPicture.asset(weatherIcons + 'sunset.svg',
-                        width: 48.0, height: 48.0),
-                    Container(
-                        padding: const EdgeInsets.only(left: 8, right: 8),
-                        child: Text(
-                          getTime(_forecastData.currentData.sunset),
-                        ))
-                  ],
-                )
-              ],
-            ),
-          ),
-          // high and low
-          Container(
+  Widget _buildDetails(ForecastData forecastData) => Container(
+        padding: const EdgeInsets.only(top: 4, bottom: 4),
+        child: Column(
+          children: [
+            // sunrise sunset
+            Container(
               padding: const EdgeInsets.only(left: 12, right: 12),
               margin: const EdgeInsets.only(top: 6, bottom: 6),
               child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                  children: [
-                    Row(
-                      children: [
-                        SvgPicture.asset(weatherIcons + 'warm.svg',
-                            width: 48.0, height: 48.0),
-                        Container(
-                            padding: const EdgeInsets.only(left: 8, right: 8),
-                            child: Text(_forecastData.dailyData[0].high
-                                    .round()
-                                    .toString() +
-                                'ºF'))
-                      ],
-                    ),
-                    Row(
-                      children: [
-                        Row(
-                          children: [
-                            SvgPicture.asset(weatherIcons + 'cold.svg',
-                                width: 48.0, height: 48.0),
-                            Container(
-                                padding:
-                                    const EdgeInsets.only(left: 8, right: 8),
-                                child: Text(_forecastData.dailyData[0].low
-                                        .round()
-                                        .toString() +
-                                    'ºF'))
-                          ],
-                        )
-                      ],
-                    )
-                  ]))
-        ],
-      ),
-    );
-  }
+                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                children: [
+                  Row(children: [
+                    SvgPicture.asset(weatherIcons + 'sunrise.svg',
+                        width: 48.0, height: 48.0),
+                    Container(
+                        padding: const EdgeInsets.only(left: 8, right: 8),
+                        child: Text(getTime(forecastData.currentData.sunrise)))
+                  ]),
+                  Row(
+                    children: [
+                      SvgPicture.asset(weatherIcons + 'sunset.svg',
+                          width: 48.0, height: 48.0),
+                      Container(
+                          padding: const EdgeInsets.only(left: 8, right: 8),
+                          child: Text(
+                            getTime(forecastData.currentData.sunset),
+                          ))
+                    ],
+                  )
+                ],
+              ),
+            ),
+            // high and low
+            Container(
+                padding: const EdgeInsets.only(left: 12, right: 12),
+                margin: const EdgeInsets.only(top: 6, bottom: 6),
+                child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                    children: [
+                      Row(
+                        children: [
+                          SvgPicture.asset(weatherIcons + 'warm.svg',
+                              width: 48.0, height: 48.0),
+                          Container(
+                              padding: const EdgeInsets.only(left: 8, right: 8),
+                              child: Text(forecastData.dailyData[0].high
+                                      .round()
+                                      .toString() +
+                                  getUnit(forecastData.isImperial)))
+                        ],
+                      ),
+                      Row(
+                        children: [
+                          Row(
+                            children: [
+                              SvgPicture.asset(weatherIcons + 'cold.svg',
+                                  width: 48.0, height: 48.0),
+                              Container(
+                                  padding:
+                                      const EdgeInsets.only(left: 8, right: 8),
+                                  child: Text(forecastData.dailyData[0].low
+                                          .round()
+                                          .toString() +
+                                      getUnit(forecastData.isImperial)))
+                            ],
+                          )
+                        ],
+                      )
+                    ]))
+          ],
+        ),
+      );
 
-  Widget buildDaily() {
+  Widget _buildDaily(ForecastData forecastData) {
     List<Widget> dates = [];
     List<Widget> bars = [];
-    for (int i = 0; i < _forecastData.dailyData.length; i++) {
-      DailyForecast dailyData = _forecastData.dailyData[i];
+    for (int i = 0; i < forecastData.dailyData.length; i++) {
+      DailyForecast dailyData = forecastData.dailyData[i];
       String date = getWeekday(dailyData.date);
       dates.add(Container(
           padding: const EdgeInsets.all(4),
-          width: 52,
+          width: 58,
           child: Text(
             date,
             style: const TextStyle(fontSize: 18),
@@ -326,18 +312,19 @@ class Body extends StatelessWidget {
           )));
       Color? barColor = getBarColor(dailyData.id, true);
       double barLength = (dailyData.high.round() - dailyData.low.round()) /
-          (_forecastData.dailyMax - _forecastData.dailyMin) *
+          (forecastData.dailyMax - forecastData.dailyMin) *
           dailyMaxHeight;
       double topPadding = (1 -
-              (dailyData.high - _forecastData.dailyMin) /
-                  (_forecastData.dailyMax - _forecastData.dailyMin)) *
+              (dailyData.high - forecastData.dailyMin) /
+                  (forecastData.dailyMax - forecastData.dailyMin)) *
           dailyMaxHeight;
       bars.add(Container(
         padding: EdgeInsets.only(top: topPadding, left: 4, right: 4, bottom: 4),
-        width: 52,
+        width: 58,
         child: Column(
           children: [
-            Text(dailyData.high.round().toString() + 'ºF'),
+            Text(dailyData.high.round().toString() +
+                getUnit(forecastData.isImperial)),
             Container(
                 margin: const EdgeInsets.only(top: 8, bottom: 8),
                 height: barLength,
@@ -350,7 +337,8 @@ class Body extends StatelessWidget {
                           ? Colors.grey
                           : Colors.transparent),
                 )),
-            Text(dailyData.low.round().toString() + 'ºF')
+            Text(dailyData.low.round().toString() +
+                getUnit(forecastData.isImperial))
           ],
         ),
       ));
@@ -376,29 +364,16 @@ class Body extends StatelessWidget {
       ),
     );
   }
-}
 
-class Topbar extends StatelessWidget {
-  const Topbar({Key? key}) : super(key: key);
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-        child: Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      children: [
-        Container(
-            padding: const EdgeInsets.all(8), child: const Icon(Icons.search)),
-        GestureDetector(
-          onTap: () {
-            Navigator.pushNamed(context, '/settings');
-          },
-          child: Container(
-            padding: const EdgeInsets.all(8),
-            child: const Icon(Icons.settings),
-          ),
-        )
-      ],
-    ));
+  Widget _buildBody(ForecastData forecastData) {
+    List<Widget> widgets = [];
+    for (int i = 0; i < forecastData.hourlyData.length; i++) {
+      widgets.add(_buildHour(i, forecastData));
+    }
+    widgets.add(_buildDetails(forecastData));
+    widgets.add(_buildDaily(forecastData));
+    return Column(
+      children: widgets,
+    );
   }
 }

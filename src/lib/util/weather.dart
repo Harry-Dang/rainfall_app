@@ -120,7 +120,11 @@ Color? getBarColor(int id, bool isDay) {
   }
 }
 
-String getUnit() {
-  isImperial().then((value) => value ? 'ºF' : 'ºC');
-  return 'ºF';
+String getUnit(bool isImperial) {
+  // String unit = 'ºF';
+  // isImperial().then((value) {
+  //   value ? unit = 'ºF' : unit = 'ºC';
+  // });
+  // return unit;
+  return isImperial ? 'ºF' : 'ºC';
 }
