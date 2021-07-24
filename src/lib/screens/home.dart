@@ -7,7 +7,7 @@ import 'package:src/util/dates_times.dart';
 import 'package:src/util/weather.dart';
 
 const int hourlyMinWidth = 48;
-const int hourlyMaxWidth = 240;
+const int hourlyMaxWidth = 236;
 
 const int dailyMaxHeight = 160;
 
@@ -57,13 +57,18 @@ class _HomeForecastState extends State<HomeForecast> {
                   children: [
                     _buildTopBar(),
                     _buildHeader(snapshot.data!),
-                    // Header.fromData(
-                    //     snapshot.data!.currentData, snapshot.data!.currentInfo),
                     _buildBody(snapshot.data!)
-                    // Body.fromData(snapshot.data!)
                   ],
                 ),
-                onRefresh: () => _refresh());
+                onRefresh: () {
+                  if (snapshot.data!.currentInfo.date
+                      .add(const Duration(minutes: 1))
+                      .isAfter(DateTime.now())) {
+                    return _refresh(true);
+                  } else {
+                    return _refresh(false);
+                  }
+                });
           } else {
             return Text('Error:\n${snapshot.data!.statusCode}');
           }
@@ -75,10 +80,17 @@ class _HomeForecastState extends State<HomeForecast> {
     );
   }
 
-  Future<void> _refresh() async {
-    setState(() {
-      futureData = fetchForecastData();
-    });
+  Future<void> _refresh(bool force) async {
+    if (force) {
+      setState(() {
+        futureData = fetchForecastData();
+      });
+    }
+  }
+
+  void _navigateSettings() async {
+    dynamic result = await Navigator.pushNamed(context, '/settings');
+    _refresh(result ?? false);
   }
 
   Widget _buildTopBar() => Container(
@@ -89,9 +101,7 @@ class _HomeForecastState extends State<HomeForecast> {
               padding: const EdgeInsets.all(8),
               child: const Icon(Icons.search)),
           GestureDetector(
-            onTap: () {
-              Navigator.pushNamed(context, '/settings');
-            },
+            onTap: () => _navigateSettings(),
             child: Container(
               padding: const EdgeInsets.all(8),
               child: const Icon(Icons.settings),
