@@ -7,7 +7,7 @@ import 'package:src/util/dates_times.dart';
 import 'package:src/util/weather.dart';
 
 const int hourlyMinWidth = 48;
-const int hourlyMaxWidth = 236;
+const int hourlyMaxWidth = 224;
 
 const int dailyMaxHeight = 160;
 
@@ -97,9 +97,12 @@ class _HomeForecastState extends State<HomeForecast> {
           child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Container(
-              padding: const EdgeInsets.all(8),
-              child: const Icon(Icons.search)),
+          GestureDetector(
+            onTap: () => Navigator.pushNamed(context, '/search'),
+            child: Container(
+                padding: const EdgeInsets.all(8),
+                child: const Icon(Icons.search)),
+          ),
           GestureDetector(
             onTap: () => _navigateSettings(),
             child: Container(
@@ -208,9 +211,10 @@ class _HomeForecastState extends State<HomeForecast> {
             hourlyData[index].time.day == forecastData.currentInfo.date.day
                 ? forecastData.currentData.sunset
                 : forecastData.dailyData[1].sunset));
-    String rain = hourlyData[index].rain <= 0.25
-        ? ''
-        : (hourlyData[index].rain * 100).toInt().toString() + "%";
+    String rain = hourlyData[index].rain >= 0.25 ||
+            (hourlyData[index].id <= 531 && hourlyData[index].id >= 200)
+        ? (hourlyData[index].rain * 100).toInt().toString() + "%"
+        : '';
     return Container(
         padding: EdgeInsets.only(
             top: 10, bottom: 10, left: hour.length == 5 ? 32 : 40, right: 40),

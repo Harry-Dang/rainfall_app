@@ -118,8 +118,8 @@ class CurrentData {
 
   factory CurrentData.fromJson(Map<String, dynamic> json) {
     return CurrentData(
-        temp: json['temp'],
-        feelsLike: json['feels_like'],
+        temp: json['temp'].toDouble(),
+        feelsLike: json['feels_like'].toDouble(),
         weather: json['weather'][0]['description'],
         id: json['weather'][0]['id'],
         sunrise: DateTime.fromMillisecondsSinceEpoch(json['sunrise'] * 1000),
