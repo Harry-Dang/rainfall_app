@@ -21,8 +21,6 @@ class SearchBody extends StatefulWidget {
 }
 
 class _SearchBodyState extends State<SearchBody> {
-  final Search _search = Search();
-  // late Future<List<Places>> _results;
   List<Places> _results = [];
   final TextEditingController _searchController = TextEditingController();
 
@@ -39,7 +37,7 @@ class _SearchBodyState extends State<SearchBody> {
         children: [
           GestureDetector(
             onTap: () {
-              Navigator.pop(context);
+              Navigator.pop(context, false);
             },
             child: const Icon(Icons.arrow_back),
           )
@@ -52,7 +50,7 @@ class _SearchBodyState extends State<SearchBody> {
         children: [
           GestureDetector(
             onTap: () {
-              Navigator.pop(context, []);
+              Navigator.pop(context);
             },
             child: Container(
                 padding: const EdgeInsets.all(12),
@@ -108,8 +106,13 @@ class _SearchBodyState extends State<SearchBody> {
               shrinkWrap: _results.isNotEmpty,
               itemCount: _results.length,
               itemBuilder: (context, index) {
-                return ListTile(
-                  title: Text(_results[index].name),
+                return GestureDetector(
+                  onTap: () {
+                    Navigator.pop(context, _results[index]);
+                  },
+                  child: ListTile(
+                    title: Text(_results[index].name),
+                  ),
                 );
               }));
     } else {

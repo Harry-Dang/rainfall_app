@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 
 import 'package:src/forecast/forecast.dart';
+import 'package:src/search/search.dart';
 import 'package:src/util/dates_times.dart';
 import 'package:src/util/weather.dart';
 
@@ -93,12 +94,21 @@ class _HomeForecastState extends State<HomeForecast> {
     _refresh(result ?? false);
   }
 
+  void _navigateSearch() async {
+    dynamic result = await Navigator.pushNamed(context, '/search');
+    if (result == null || result is Places) {
+      setState(() {
+        futureData = fetchForecastData(result);
+      });
+    }
+  }
+
   Widget _buildTopBar() => Container(
           child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           GestureDetector(
-            onTap: () => Navigator.pushNamed(context, '/search'),
+            onTap: () => _navigateSearch(),
             child: Container(
                 padding: const EdgeInsets.all(8),
                 child: const Icon(Icons.search)),

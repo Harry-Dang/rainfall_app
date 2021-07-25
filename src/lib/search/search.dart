@@ -23,40 +23,12 @@ Future<List<Places>> search(String input) async {
     for (int i = 0; i < data['features'].length; i++) {
       results.add(Places(
           name: data['features'][i]['properties']['formatted'],
-          lat: data['features'][i]['geometry']['coordinates'][0],
-          long: data['features'][i]['geometry']['coordinates'][1]));
+          lat: data['features'][i]['geometry']['coordinates'][1],
+          long: data['features'][i]['geometry']['coordinates'][0]));
     }
     return results;
   } else {
     return results;
-  }
-}
-
-class Search {
-  Search();
-
-  List<Places> results = [];
-
-  void lookUp(String input) async {
-    results = [];
-    final response = await http.get(Uri.parse(
-        'https://api.geoapify.com/v1/geocode/autocomplete?text=' +
-            input +
-            '&limit=' +
-            limit.toString() +
-            '&type=' +
-            type +
-            '&apiKey=' +
-            Env.geoapify));
-    if (response.statusCode == 200) {
-      dynamic data = jsonDecode(response.body);
-      for (int i = 0; i < data['features'].length; i++) {
-        results.add(Places(
-            name: data['features'][i]['properties']['formatted'],
-            lat: data['features'][i]['geometry']['coordinates'][0],
-            long: data['features'][i]['geometry']['coordinates'][1]));
-      }
-    }
   }
 }
 

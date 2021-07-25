@@ -7,18 +7,28 @@ import 'package:geolocator/geolocator.dart';
 import 'package:src/env/env.dart';
 import 'package:src/location/location.dart';
 import 'package:src/util/preferences.dart';
+import 'package:src/search/search.dart';
 
 const hours = 12;
 const days = 6;
 
-Future<ForecastData> fetchForecastData() async {
+Future<ForecastData> fetchForecastData([Places? place]) async {
   bool imperial = await isImperial();
-  Position position = await getCurrentLocation();
+  double lat;
+  double long;
+  if (place == null) {
+    Position position = await getCurrentLocation();
+    lat = position.latitude;
+    long = position.longitude;
+  } else {
+    lat = place.lat;
+    long = place.long;
+  }
   final response = await http.get(Uri.parse(
       'https://api.openweathermap.org/data/2.5/onecall?lat=' +
-          position.latitude.toString() +
+          lat.toString() +
           '&lon=' +
-          position.longitude.toString() +
+          long.toString() +
           '&appid=' +
           Env.openweather +
           '&units=' +
@@ -54,9 +64,7 @@ Future<ForecastData> fetchForecastData() async {
         imperial,
         CurrentData.fromJson(data['current']),
         CurrentInfo(
-            await placemarkFromCoordinates(
-                position.latitude, position.longitude),
-            data['current']['dt']),
+            await placemarkFromCoordinates(lat, long), data['current']['dt']),
         hourly,
         daily);
     result.hourlyMin = hourlyMin!;
