@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import 'package:src/search/search.dart';
+import 'package:src/util/save.dart';
 
 class SearchScreen extends StatelessWidget {
   const SearchScreen({Key? key}) : super(key: key);
@@ -22,7 +23,18 @@ class SearchBody extends StatefulWidget {
 
 class _SearchBodyState extends State<SearchBody> {
   List<Places> _results = [];
+  late List<Places> _savedPlaces;
   final TextEditingController _searchController = TextEditingController();
+
+  void _getSavedPlaces() async {
+    _savedPlaces = await getPlaces();
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    _getSavedPlaces();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -112,6 +124,22 @@ class _SearchBodyState extends State<SearchBody> {
                   },
                   child: ListTile(
                     title: Text(_results[index].name),
+                    trailing: alreadySaved(_savedPlaces, _results[index])
+                        ? Container(
+                            width: 1,
+                          )
+                        : GestureDetector(
+                            onTap: () {
+                              try {
+                                saveLocation(_results[index]);
+                              } catch (e) {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                    SnackBar(content: Text(e.toString())));
+                              }
+                              Navigator.pop(context, _results[index]);
+                            },
+                            child: const Icon(Icons.add),
+                          ),
                   ),
                 );
               }));

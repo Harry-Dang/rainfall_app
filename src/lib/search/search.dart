@@ -38,4 +38,11 @@ class Places {
   double long;
 
   Places({required this.name, required this.lat, required this.long});
+
+  Places.fromJson(Map<String, dynamic> json)
+      : name = json['name'],
+        lat = json['lat'],
+        long = json['long'];
+
+  Map<String, dynamic> toJson() => {'name': name, 'lat': lat, 'long': long};
 }

@@ -52,23 +52,14 @@ class _HomeForecastState extends State<HomeForecast> {
       builder: (context, snapshot) {
         if (snapshot.hasData) {
           if (snapshot.data!.ready) {
-            return RefreshIndicator(
-                child: ListView(
-                  children: [
-                    _buildTopBar(),
-                    _buildHeader(snapshot.data!),
-                    _buildBody(snapshot.data!)
-                  ],
+            return Column(children: [
+              _buildTopBar(),
+              Expanded(
+                child: PageView(
+                  children: [_buildPage(snapshot.data!), const Text('page 2')],
                 ),
-                onRefresh: () {
-                  if (snapshot.data!.currentInfo.date
-                      .add(const Duration(minutes: 1))
-                      .isBefore(DateTime.now())) {
-                    return _refresh(true);
-                  } else {
-                    return _refresh(false);
-                  }
-                });
+              )
+            ]);
           } else {
             return Text('Error:\n${snapshot.data!.statusCode}');
           }
@@ -77,22 +68,6 @@ class _HomeForecastState extends State<HomeForecast> {
         }
         return const CircularProgressIndicator();
       },
-    );
-  }
-
-  Widget _buildText() {
-    double deviceWidth = MediaQuery.of(context).size.shortestSide;
-    return Row(
-      children: [
-        Container(
-          height: 32,
-          width: deviceWidth * 0.75,
-          decoration: const BoxDecoration(
-            color: Colors.black,
-            borderRadius: BorderRadius.all(Radius.circular(90.0)),
-          ),
-        )
-      ],
     );
   }
 
@@ -119,7 +94,8 @@ class _HomeForecastState extends State<HomeForecast> {
   }
 
   Widget _buildTopBar() => Container(
-          child: Row(
+      padding: const EdgeInsets.all(4),
+      child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           GestureDetector(
@@ -137,6 +113,24 @@ class _HomeForecastState extends State<HomeForecast> {
           )
         ],
       ));
+
+  Widget _buildPage(ForecastData forecastData) {
+    return Expanded(
+        child: RefreshIndicator(
+            child: ListView(children: [
+              _buildHeader(forecastData),
+              _buildBody(forecastData)
+            ]),
+            onRefresh: () {
+              if (forecastData.currentInfo.date
+                  .add(const Duration(minutes: 1))
+                  .isBefore(DateTime.now())) {
+                return _refresh(true);
+              } else {
+                return _refresh(false);
+              }
+            }));
+  }
 
   Widget _buildLocale(CurrentInfo currentInfo) => Container(
       margin: const EdgeInsets.only(bottom: 15),

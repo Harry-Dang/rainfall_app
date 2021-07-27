@@ -51,6 +51,7 @@ class _SettingsState extends State<Settings> {
           GestureDetector(
             onTap: () {
               Navigator.pop(context, _isDirty);
+              _isDirty = false;
             },
             child: const Icon(Icons.arrow_back),
           )
