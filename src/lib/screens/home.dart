@@ -327,19 +327,9 @@ class _HomeForecastState extends State<HomeForecast> {
       );
 
   Widget _buildDaily(ForecastData forecastData) {
-    List<Widget> dates = [];
-    List<Widget> bars = [];
+    List<Widget> daily = [];
     for (int i = 0; i < forecastData.dailyData.length; i++) {
       DailyForecast dailyData = forecastData.dailyData[i];
-      String date = getWeekday(dailyData.date);
-      dates.add(Container(
-          padding: const EdgeInsets.all(4),
-          width: 58,
-          child: Text(
-            date,
-            style: const TextStyle(fontSize: 18),
-            textAlign: TextAlign.center,
-          )));
       Color? barColor = getBarColor(dailyData.id, true);
       double barLength = (dailyData.high.round() - dailyData.low.round()) /
           (forecastData.dailyMax - forecastData.dailyMin) *
@@ -348,13 +338,22 @@ class _HomeForecastState extends State<HomeForecast> {
               (dailyData.high - forecastData.dailyMin) /
                   (forecastData.dailyMax - forecastData.dailyMin)) *
           dailyMaxHeight;
-      bars.add(Container(
-        padding: EdgeInsets.only(top: topPadding, left: 4, right: 4, bottom: 4),
-        width: 58,
+      daily.add(Container(
+        padding: const EdgeInsets.all(6),
         child: Column(
           children: [
-            Text(dailyData.high.round().toString() +
-                getUnit(forecastData.isImperial)),
+            Container(
+              padding: const EdgeInsets.all(4),
+              child: Text(
+                getWeekday(dailyData.date),
+                style: const TextStyle(fontSize: 18),
+                textAlign: TextAlign.center,
+              ),
+            ),
+            Container(
+              padding: EdgeInsets.only(top: topPadding),
+              child: Text(dailyData.high.round().toString()),
+            ),
             Container(
                 margin: const EdgeInsets.only(top: 8, bottom: 8),
                 height: barLength,
@@ -367,31 +366,19 @@ class _HomeForecastState extends State<HomeForecast> {
                           ? Colors.grey
                           : Colors.transparent),
                 )),
-            Text(dailyData.low.round().toString() +
-                getUnit(forecastData.isImperial))
+            Container(
+              padding: const EdgeInsets.only(bottom: 8),
+              child: Text(dailyData.low.round().toString() +
+                  getUnit(forecastData.isImperial)),
+            )
           ],
         ),
       ));
     }
-    return Container(
-      padding: const EdgeInsets.all(12),
-      child: Column(
-        children: [
-          Container(
-              padding: const EdgeInsets.only(left: 12, right: 12),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                children: dates,
-              )),
-          Container(
-              padding: const EdgeInsets.only(left: 12, right: 12),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: bars,
-              ))
-        ],
-      ),
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.center,
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: daily,
     );
   }
 
