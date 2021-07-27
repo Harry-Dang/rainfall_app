@@ -8,7 +8,6 @@ import 'package:src/util/dates_times.dart';
 import 'package:src/util/weather.dart';
 
 const int hourlyMinWidth = 48;
-const int hourlyMaxWidth = 224;
 
 const int dailyMaxHeight = 160;
 
@@ -78,6 +77,22 @@ class _HomeForecastState extends State<HomeForecast> {
         }
         return const CircularProgressIndicator();
       },
+    );
+  }
+
+  Widget _buildText() {
+    double deviceWidth = MediaQuery.of(context).size.shortestSide;
+    return Row(
+      children: [
+        Container(
+          height: 32,
+          width: deviceWidth * 0.75,
+          decoration: const BoxDecoration(
+            color: Colors.black,
+            borderRadius: BorderRadius.all(Radius.circular(90.0)),
+          ),
+        )
+      ],
     );
   }
 
@@ -209,6 +224,7 @@ class _HomeForecastState extends State<HomeForecast> {
   Widget _buildHour(int index, ForecastData forecastData) {
     List<HourlyForecast> hourlyData = forecastData.hourlyData;
     String hour = getHour(hourlyData[index].time);
+    double hourlyMaxWidth = MediaQuery.of(context).size.shortestSide * 0.55;
     double tempBar = (hourlyData[index].temp.round() - forecastData.hourlyMin) /
         (forecastData.hourlyMax - forecastData.hourlyMin);
     Color? barColor = getBarColor(
