@@ -5,7 +5,6 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:src/forecast/forecast.dart';
 import 'package:src/search/search.dart';
 import 'package:src/util/dates_times.dart';
-import 'package:src/util/save.dart';
 import 'package:src/util/weather.dart';
 
 const int hourlyMinWidth = 48;
@@ -36,45 +35,46 @@ class HomeForecast extends StatefulWidget {
 }
 
 class _HomeForecastState extends State<HomeForecast> {
-  Places? _place;
-  late List<Places> _allPlaces;
-
   late Future<ForecastData> futureData;
-
-  final PageController _pageController =
-      PageController(initialPage: 0, keepPage: true);
-
   bool error = false;
   late String errorMessage;
-
-  void getAllPlaces() async {
-    _allPlaces = await getPlaces();
-  }
 
   @override
   void initState() {
     super.initState();
     futureData = fetchForecastData();
-    getAllPlaces();
   }
 
   @override
   Widget build(BuildContext context) {
-    return Column(children: [
-      _buildTopBar(),
-      Expanded(
-        child: PageView(
-          controller: _pageController,
-          children: [_buildPage(), const Text('page 2')],
-        ),
-      )
-    ]);
+    return FutureBuilder<ForecastData>(
+      future: futureData,
+      builder: (context, snapshot) {
+        if (snapshot.hasData) {
+          if (snapshot.data!.ready) {
+            return Column(children: [
+              _buildTopBar(),
+              Expanded(
+                child: PageView(
+                  children: [_buildPage(snapshot.data!), const Text('page 2')],
+                ),
+              )
+            ]);
+          } else {
+            return Text('Error:\n${snapshot.data!.statusCode}');
+          }
+        } else if (snapshot.hasError) {
+          return Text('${snapshot.error}');
+        }
+        return const CircularProgressIndicator();
+      },
+    );
   }
 
   Future<void> _refresh(bool force) async {
     if (force) {
       setState(() {
-        futureData = fetchForecastData(_place);
+        futureData = fetchForecastData();
       });
     }
   }
@@ -88,7 +88,6 @@ class _HomeForecastState extends State<HomeForecast> {
     dynamic result = await Navigator.pushNamed(context, '/search');
     if (result == null || result is Places) {
       setState(() {
-        _place = result;
         futureData = fetchForecastData(result);
       });
     }
@@ -115,34 +114,22 @@ class _HomeForecastState extends State<HomeForecast> {
         ],
       ));
 
-  Widget _buildPage() {
-    return FutureBuilder<ForecastData>(
-        future: futureData,
-        builder: (context, snapshot) {
-          if (snapshot.hasData) {
-            if (snapshot.data!.ready) {
-              return RefreshIndicator(
-                  child: ListView(children: [
-                    _buildHeader(snapshot.data!),
-                    _buildBody(snapshot.data!)
-                  ]),
-                  onRefresh: () {
-                    if (snapshot.data!.currentInfo.date
-                        .add(const Duration(minutes: 1))
-                        .isBefore(DateTime.now())) {
-                      return _refresh(true);
-                    } else {
-                      return _refresh(false);
-                    }
-                  });
-            } else {
-              return Text('Error:\n${snapshot.data!.statusCode}');
-            }
-          } else if (snapshot.hasError) {
-            return Text('${snapshot.error}');
-          }
-          return const CircularProgressIndicator();
-        });
+  Widget _buildPage(ForecastData forecastData) {
+    return Expanded(
+        child: RefreshIndicator(
+            child: ListView(children: [
+              _buildHeader(forecastData),
+              _buildBody(forecastData)
+            ]),
+            onRefresh: () {
+              if (forecastData.currentInfo.date
+                  .add(const Duration(minutes: 1))
+                  .isBefore(DateTime.now())) {
+                return _refresh(true);
+              } else {
+                return _refresh(false);
+              }
+            }));
   }
 
   Widget _buildLocale(CurrentInfo currentInfo) => Container(
@@ -362,7 +349,7 @@ class _HomeForecastState extends State<HomeForecast> {
                   (forecastData.dailyMax - forecastData.dailyMin)) *
           dailyMaxHeight;
       daily.add(Container(
-        padding: const EdgeInsets.all(8),
+        padding: const EdgeInsets.all(6),
         child: Column(
           children: [
             Container(
@@ -375,8 +362,7 @@ class _HomeForecastState extends State<HomeForecast> {
             ),
             Container(
               padding: EdgeInsets.only(top: topPadding),
-              child: Text(dailyData.high.round().toString() +
-                  getUnit(forecastData.isImperial)),
+              child: Text(dailyData.high.round().toString()),
             ),
             Container(
                 margin: const EdgeInsets.only(top: 8, bottom: 8),
@@ -399,13 +385,10 @@ class _HomeForecastState extends State<HomeForecast> {
         ),
       ));
     }
-    return Container(
-      padding: const EdgeInsets.only(top: 8, bottom: 8, left: 24, right: 24),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: daily,
-      ),
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.center,
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: daily,
     );
   }
 
