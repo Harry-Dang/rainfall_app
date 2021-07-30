@@ -61,3 +61,9 @@ Future<File> saveLocation(Places place) async {
   saved['locations'].add(place.toJson());
   return _writeSavedLocations(saved);
 }
+
+Future<File> saveAllLocations(List<Places> places) async {
+  final File file = await _getSavedLocations();
+  Map<String, dynamic> result = {'locations': places};
+  return file.writeAsString(json.encode(result));
+}

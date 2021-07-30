@@ -67,7 +67,6 @@ class _HomeForecastState extends State<HomeForecast> {
                     if (index == 0) {
                       return ForecastPage(forecastData: ForecastData());
                     } else {
-                      print(_allPlaces[index - 1].name);
                       return ForecastPage(
                           forecastData:
                               ForecastData(place: _allPlaces[index - 1]));
@@ -85,7 +84,11 @@ class _HomeForecastState extends State<HomeForecast> {
   void _navigateSettings() async {
     dynamic result = await Navigator.pushNamed(context, '/settings');
     if (result ?? false) {
-      setState(() {});
+      List<Places> result = await getPlaces();
+      setState(() {
+        _futureAllPlaces = getPlaces();
+        _allPlaces = result;
+      });
     }
   }
 
@@ -98,6 +101,11 @@ class _HomeForecastState extends State<HomeForecast> {
       setState(() {
         saveLocation(result);
         _allPlaces.add(result);
+      });
+      WidgetsBinding.instance!.addPostFrameCallback((duration) {
+        if (_pageController.hasClients) {
+          _pageController.jumpToPage(_allPlaces.length);
+        }
       });
     }
   }

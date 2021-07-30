@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:src/search/search.dart';
 
 import 'package:src/util/preferences.dart';
+import 'package:src/util/save.dart';
 
 class SettingsScreen extends StatelessWidget {
   const SettingsScreen({Key? key}) : super(key: key);
@@ -72,12 +74,22 @@ class _SettingsState extends State<Settings> {
             },
           ),
           ListTile(
+            title: const Text('Reorder saved locations'),
+            onTap: () async {
+              dynamic result = await Navigator.push(context,
+                  MaterialPageRoute(builder: (context) => const ReorderPage()));
+              if (result != null && result) {
+                _isDirty = true;
+              }
+            },
+          ),
+          ListTile(
             title: const Text('About'),
             onTap: () {
               Navigator.push(context,
                   MaterialPageRoute(builder: (context) => const AboutPage()));
             },
-          )
+          ),
         ],
       );
 }
@@ -136,5 +148,88 @@ class AboutPage extends StatelessWidget {
         )
       ],
     );
+  }
+}
+
+class ReorderPage extends StatefulWidget {
+  const ReorderPage({Key? key}) : super(key: key);
+
+  @override
+  _ReorderPageState createState() => _ReorderPageState();
+}
+
+class _ReorderPageState extends State<ReorderPage> {
+  List<Places>? _allPlaces = [];
+  bool _isDirty = false;
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      body: SafeArea(
+        child: Column(
+          children: [_buildTopBar(), _buildBody()],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildTopBar() => Container(
+      padding: const EdgeInsets.all(8),
+      child: Row(
+        children: [
+          GestureDetector(
+            onTap: () {
+              Navigator.pop(context, _isDirty);
+            },
+            child: const Icon(Icons.arrow_back),
+          )
+        ],
+      ));
+
+  Widget _buildBody() {
+    return FutureBuilder<List<Places>>(
+        future: getPlaces(),
+        builder: (context, snapshot) {
+          if (snapshot.hasData) {
+            _allPlaces = snapshot.data!;
+            return Expanded(
+                child: ReorderableListView.builder(
+              padding: const EdgeInsets.all(4),
+              itemBuilder: (context, index) {
+                return ListTile(
+                    key: Key('$index'),
+                    title: Text(snapshot.data![index].name),
+                    leading: const Icon(Icons.drag_handle),
+                    trailing: GestureDetector(
+                      child: const Icon(Icons.delete),
+                      onTap: () {
+                        setState(() {
+                          _isDirty = true;
+                          _allPlaces!.removeAt(index);
+                          saveAllLocations(_allPlaces!);
+                        });
+                      },
+                    ));
+              },
+              itemCount: snapshot.data!.length,
+              onReorder: (int oldIndex, int newIndex) {
+                if (oldIndex < newIndex) {
+                  newIndex -= 1;
+                }
+                setState(() {
+                  final Places item = _allPlaces!.removeAt(oldIndex);
+                  _allPlaces!.insert(newIndex, item);
+                  saveAllLocations(_allPlaces!);
+                  _isDirty = true;
+                });
+              },
+              buildDefaultDragHandles: true,
+            ));
+          } else if (snapshot.hasError) {
+            return Center(child: Text(snapshot.error.toString()));
+          } else {
+            return const Center(child: CircularProgressIndicator());
+          }
+        });
   }
 }

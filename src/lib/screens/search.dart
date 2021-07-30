@@ -180,7 +180,6 @@ class _SearchBodyState extends State<SearchBody> {
                             child: const Icon(Icons.arrow_back))),
                     GestureDetector(
                       onTap: () {
-                        // TODO save this location
                         try {
                           saveLocation(place);
                         } catch (e) {
