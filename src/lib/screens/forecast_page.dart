@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 
 import 'package:src/forecast/forecast.dart';
-import 'package:src/search/search.dart';
 import 'package:src/util/dates_times.dart';
 import 'package:src/util/weather.dart';
 
@@ -12,86 +11,43 @@ const int dailyMaxHeight = 160;
 
 const String weatherIcons = 'assets/icons/weather/';
 
-class ForecastPage extends StatefulWidget {
-  final int id;
-  final Places? place;
-  final bool load;
+class ForecastPage extends StatelessWidget {
+  const ForecastPage({Key? key, required this.forecastData}) : super(key: key);
 
-  const ForecastPage({
-    Key? key,
-    required this.id,
-    required this.load,
-    this.place,
-  }) : super(key: key);
-
-  @override
-  _ForecastPageState createState() => _ForecastPageState();
-}
-
-class _ForecastPageState extends State<ForecastPage> {
-  late Future<ForecastData> _futureData;
-  ForecastData? _forecastData;
-
-  bool _error = false;
-  late String _errorMessage;
-
-  @override
-  void initState() {
-    super.initState();
-    _futureData = fetchForecastData();
-  }
-
-  bool _isRefreshNeeded() {
-    return _forecastData!.currentInfo.date
-        .add(const Duration(minutes: 1))
-        .isBefore(DateTime.now());
-  }
-
-  Future<void> refresh([bool? force]) async {
-    if (_isRefreshNeeded() || force == true) {
-      setState(() {
-        _futureData = fetchForecastData(widget.place);
-      });
-    }
-  }
-
-  Future<void> _refresh(bool force) async {
-    if (force) {
-      setState(() {
-        _futureData = fetchForecastData(widget.place);
-      });
-    }
-  }
+  final ForecastData forecastData;
 
   @override
   Widget build(BuildContext context) {
-    if (widget.load) {
-      return FutureBuilder<ForecastData>(
-          future: _futureData,
-          builder: (context, snapshot) {
-            if (snapshot.hasData) {
-              if (snapshot.data!.ready) {
-                _forecastData = snapshot.data!;
-                return RefreshIndicator(
-                    child: ListView(children: [_buildHeader(), _buildBody()]),
-                    onRefresh: () {
-                      return _refresh(_isRefreshNeeded());
-                    });
-              } else {
-                _error = true;
-                _errorMessage = snapshot.data!.statusCode.toString();
-                return Text('Error:\n${snapshot.data!.statusCode}');
-              }
-            } else if (snapshot.hasError) {
-              _error = true;
-              _errorMessage = snapshot.error.toString();
-              return Text('${snapshot.error}');
+    return FutureBuilder(
+      future: forecastData.refresh(),
+      builder: (context, snapshot) {
+        if (snapshot.hasData) {
+          if (snapshot.data == true) {
+            if (forecastData.ready) {
+              return RefreshIndicator(
+                  child: ListView(
+                    children: [_buildHeader(), _buildBody(context)],
+                  ),
+                  onRefresh: () async {
+                    forecastData.refresh();
+                  });
+            } else {
+              return const Center(
+                child: Text('forecastData not ready'),
+              );
             }
-            return const Center(child: CircularProgressIndicator());
-          });
-    } else {
-      return const Center(child: CircularProgressIndicator());
-    }
+          } else {
+            return Center(
+              child: Text(snapshot.data.toString()),
+            );
+          }
+        } else if (snapshot.hasError) {
+          return const Text('error');
+        } else {
+          return const Center(child: CircularProgressIndicator());
+        }
+      },
+    );
   }
 
   Widget _buildHeader() => Container(
@@ -105,7 +61,7 @@ class _ForecastPageState extends State<ForecastPage> {
         margin: const EdgeInsets.only(bottom: 15),
         child: Center(
             child: Text(
-          _forecastData!.currentInfo.location,
+          forecastData.currentInfo!.location,
           style: const TextStyle(fontSize: 18),
         )));
   }
@@ -132,7 +88,7 @@ class _ForecastPageState extends State<ForecastPage> {
                 child: Align(
                     alignment: Alignment.topLeft,
                     child: Text(
-                      getDate(_forecastData!.currentInfo.date),
+                      getDate(forecastData.currentInfo!.date),
                       style: const TextStyle(fontSize: 12),
                     ))),
             Container(
@@ -140,7 +96,7 @@ class _ForecastPageState extends State<ForecastPage> {
                 child: Align(
                   alignment: Alignment.topLeft,
                   child: Text(
-                    getTime(_forecastData!.currentInfo.date),
+                    getTime(forecastData.currentInfo!.date),
                     style: const TextStyle(fontSize: 12),
                   ),
                 ))
@@ -149,13 +105,13 @@ class _ForecastPageState extends State<ForecastPage> {
   Widget _buildTemp() => Column(
         children: [
           Text(
-            _forecastData!.currentData.temp.round().toString() +
-                getUnit(_forecastData!.isImperial),
+            forecastData.currentData!.temp.round().toString() +
+                getUnit(forecastData.isImperial),
             style: const TextStyle(fontSize: 72),
           ),
           Text('feels like: ' +
-              _forecastData!.currentData.feelsLike.round().toString() +
-              getUnit(_forecastData!.isImperial))
+              forecastData.currentData!.feelsLike.round().toString() +
+              getUnit(forecastData.isImperial))
         ],
       );
 
@@ -164,19 +120,19 @@ class _ForecastPageState extends State<ForecastPage> {
       child: Column(
         children: [
           getIcon(
-              _forecastData!.currentData.id,
+              forecastData.currentData!.id,
               isDay(
-                  _forecastData!.currentInfo.date,
-                  _forecastData!.currentData.sunrise,
-                  _forecastData!.currentData.sunset)),
-          Text(_forecastData!.currentData.weather)
+                  forecastData.currentInfo!.date,
+                  forecastData.currentData!.sunrise,
+                  forecastData.currentData!.sunset)),
+          Text(forecastData.currentData!.weather)
         ],
       ));
 
-  Widget _buildBody() {
+  Widget _buildBody(BuildContext context) {
     List<Widget> widgets = [];
-    for (int i = 0; i < _forecastData!.hourlyData.length; i++) {
-      widgets.add(_buildHour(i));
+    for (int i = 0; i < forecastData.hourlyData.length; i++) {
+      widgets.add(_buildHour(context, i));
     }
     widgets.add(_buildDetails());
     widgets.add(_buildDaily());
@@ -185,23 +141,23 @@ class _ForecastPageState extends State<ForecastPage> {
     );
   }
 
-  Widget _buildHour(int index) {
-    List<HourlyForecast> hourlyData = _forecastData!.hourlyData;
+  Widget _buildHour(BuildContext context, int index) {
+    List<HourlyForecast> hourlyData = forecastData.hourlyData;
     String hour = getHour(hourlyData[index].time);
     double hourlyMaxWidth = MediaQuery.of(context).size.shortestSide * 0.55;
     double tempBar =
-        (hourlyData[index].temp.round() - _forecastData!.hourlyMin) /
-            (_forecastData!.hourlyMax - _forecastData!.hourlyMin);
+        (hourlyData[index].temp.round() - forecastData.hourlyMin!.round()) /
+            (forecastData.hourlyMax!.round() - forecastData.hourlyMin!.round());
     Color? barColor = getBarColor(
         hourlyData[index].id,
         isDay(
             hourlyData[index].time,
-            hourlyData[index].time.day == _forecastData!.currentInfo.date.day
-                ? _forecastData!.currentData.sunrise
-                : _forecastData!.dailyData[1].sunrise,
-            hourlyData[index].time.day == _forecastData!.currentInfo.date.day
-                ? _forecastData!.currentData.sunset
-                : _forecastData!.dailyData[1].sunset));
+            hourlyData[index].time.day == forecastData.currentInfo!.date.day
+                ? forecastData.currentData!.sunrise
+                : forecastData.dailyData[1].sunrise,
+            hourlyData[index].time.day == forecastData.currentInfo!.date.day
+                ? forecastData.currentData!.sunset
+                : forecastData.dailyData[1].sunset));
     String rain = hourlyData[index].rain >= 0.25 ||
             (hourlyData[index].id <= 531 && hourlyData[index].id >= 200)
         ? (hourlyData[index].rain * 100).toInt().toString() + "%"
@@ -229,7 +185,7 @@ class _ForecastPageState extends State<ForecastPage> {
                           : Colors.transparent)),
             ),
             Text(hourlyData[index].temp.round().toString() +
-                getUnit(_forecastData!.isImperial))
+                getUnit(forecastData.isImperial))
           ],
         ));
   }
@@ -250,8 +206,7 @@ class _ForecastPageState extends State<ForecastPage> {
                         width: 48.0, height: 48.0),
                     Container(
                         padding: const EdgeInsets.only(left: 8, right: 8),
-                        child:
-                            Text(getTime(_forecastData!.currentData.sunrise)))
+                        child: Text(getTime(forecastData.currentData!.sunrise)))
                   ]),
                   Row(
                     children: [
@@ -260,7 +215,7 @@ class _ForecastPageState extends State<ForecastPage> {
                       Container(
                           padding: const EdgeInsets.only(left: 8, right: 8),
                           child: Text(
-                            getTime(_forecastData!.currentData.sunset),
+                            getTime(forecastData.currentData!.sunset),
                           ))
                     ],
                   )
@@ -280,10 +235,10 @@ class _ForecastPageState extends State<ForecastPage> {
                               width: 48.0, height: 48.0),
                           Container(
                               padding: const EdgeInsets.only(left: 8, right: 8),
-                              child: Text(_forecastData!.dailyData[0].high
+                              child: Text(forecastData.dailyData[0].high
                                       .round()
                                       .toString() +
-                                  getUnit(_forecastData!.isImperial)))
+                                  getUnit(forecastData.isImperial)))
                         ],
                       ),
                       Row(
@@ -295,10 +250,10 @@ class _ForecastPageState extends State<ForecastPage> {
                               Container(
                                   padding:
                                       const EdgeInsets.only(left: 8, right: 8),
-                                  child: Text(_forecastData!.dailyData[0].low
+                                  child: Text(forecastData.dailyData[0].low
                                           .round()
                                           .toString() +
-                                      getUnit(_forecastData!.isImperial)))
+                                      getUnit(forecastData.isImperial)))
                             ],
                           )
                         ],
@@ -310,15 +265,15 @@ class _ForecastPageState extends State<ForecastPage> {
 
   Widget _buildDaily() {
     List<Widget> daily = [];
-    for (int i = 0; i < _forecastData!.dailyData.length; i++) {
-      DailyForecast dailyData = _forecastData!.dailyData[i];
+    for (int i = 0; i < forecastData.dailyData.length; i++) {
+      DailyForecast dailyData = forecastData.dailyData[i];
       Color? barColor = getBarColor(dailyData.id, true);
       double barLength = (dailyData.high.round() - dailyData.low.round()) /
-          (_forecastData!.dailyMax - _forecastData!.dailyMin) *
+          (forecastData.dailyMax! - forecastData.dailyMin!) *
           dailyMaxHeight;
       double topPadding = (1 -
-              (dailyData.high - _forecastData!.dailyMin) /
-                  (_forecastData!.dailyMax - _forecastData!.dailyMin)) *
+              (dailyData.high - forecastData.dailyMin!) /
+                  (forecastData.dailyMax! - forecastData.dailyMin!)) *
           dailyMaxHeight;
       daily.add(Container(
         padding: const EdgeInsets.all(8),
@@ -335,7 +290,7 @@ class _ForecastPageState extends State<ForecastPage> {
             Container(
               padding: EdgeInsets.only(top: topPadding),
               child: Text(dailyData.high.round().toString() +
-                  getUnit(_forecastData!.isImperial)),
+                  getUnit(forecastData.isImperial)),
             ),
             Container(
                 margin: const EdgeInsets.only(top: 8, bottom: 8),
@@ -352,7 +307,7 @@ class _ForecastPageState extends State<ForecastPage> {
             Container(
               padding: const EdgeInsets.only(bottom: 8),
               child: Text(dailyData.low.round().toString() +
-                  getUnit(_forecastData!.isImperial)),
+                  getUnit(forecastData.isImperial)),
             )
           ],
         ),

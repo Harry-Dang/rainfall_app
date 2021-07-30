@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:src/forecast/forecast.dart';
 
 import 'package:src/screens/forecast_page.dart';
 import 'package:src/search/search.dart';
@@ -33,8 +34,9 @@ class HomeForecast extends StatefulWidget {
 
 class _HomeForecastState extends State<HomeForecast> {
   late Future<List<Places>> _futureAllPlaces;
-  List<Places>? _allPlaces;
+  List<Places> _allPlaces = [];
 
+  List<ForecastData> _allForecastData = [];
   List<ForecastPage> _pages = [];
 
   final PageController _pageController =
@@ -58,22 +60,20 @@ class _HomeForecastState extends State<HomeForecast> {
         builder: (context, snapshot) {
           if (snapshot.hasData) {
             _allPlaces = snapshot.data!;
-            for (int i = 0; i <= _allPlaces!.length; i++) {
-              if (i == 0) {
-                _pages.add(ForecastPage(id: i, load: true));
-              } else {
-                _pages.add(ForecastPage(
-                    id: i, place: _allPlaces![i - 1], load: false));
-              }
-            }
             return Expanded(
-                child: PageView(
-              controller: _pageController,
-              onPageChanged: (int page) {
-                setState(() {});
-              },
-              children: _pages,
-            ));
+              child: PageView.builder(
+                  itemCount: _allPlaces.length + 1,
+                  itemBuilder: (context, index) {
+                    if (index == 0) {
+                      return ForecastPage(forecastData: ForecastData());
+                    } else {
+                      print(_allPlaces[index - 1].name);
+                      return ForecastPage(
+                          forecastData:
+                              ForecastData(place: _allPlaces[index - 1]));
+                    }
+                  }),
+            );
           } else {
             return const Center(child: CircularProgressIndicator());
           }
