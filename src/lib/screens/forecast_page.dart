@@ -12,9 +12,9 @@ const int dailyMaxHeight = 160;
 const String weatherIcons = 'assets/icons/weather/';
 
 class ForecastPage extends StatelessWidget {
-  const ForecastPage({Key? key, required this.forecastData}) : super(key: key);
-
   final ForecastData forecastData;
+
+  const ForecastPage({Key? key, required this.forecastData}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {

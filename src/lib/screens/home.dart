@@ -41,6 +41,7 @@ class _HomeForecastState extends State<HomeForecast> {
 
   final PageController _pageController =
       PageController(initialPage: 0, keepPage: true);
+  int _pageIndex = 0;
 
   bool error = false;
   late String errorMessage;
@@ -60,18 +61,29 @@ class _HomeForecastState extends State<HomeForecast> {
         builder: (context, snapshot) {
           if (snapshot.hasData) {
             _allPlaces = snapshot.data!;
+            List<Widget> pages = [const Icon(Icons.gps_off)];
+            for (int i = 0; i < _allPlaces.length; i++) {
+              pages.add(const Icon(Icons.circle));
+            }
             return Expanded(
               child: PageView.builder(
-                  itemCount: _allPlaces.length + 1,
-                  itemBuilder: (context, index) {
-                    if (index == 0) {
-                      return ForecastPage(forecastData: ForecastData());
-                    } else {
-                      return ForecastPage(
-                          forecastData:
-                              ForecastData(place: _allPlaces[index - 1]));
-                    }
-                  }),
+                controller: _pageController,
+                itemCount: _allPlaces.length + 1,
+                itemBuilder: (context, index) {
+                  if (index == 0) {
+                    return ForecastPage(forecastData: ForecastData());
+                  } else {
+                    return ForecastPage(
+                        forecastData:
+                            ForecastData(place: _allPlaces[index - 1]));
+                  }
+                },
+                onPageChanged: (int page) {
+                  setState(() {
+                    _pageIndex = page;
+                  });
+                },
+              ),
             );
           } else {
             return const Center(child: CircularProgressIndicator());
@@ -110,24 +122,36 @@ class _HomeForecastState extends State<HomeForecast> {
     }
   }
 
-  Widget _buildTopBar() => Container(
-      padding: const EdgeInsets.all(4),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          GestureDetector(
-            onTap: () => _navigateSearch(),
-            child: Container(
-                padding: const EdgeInsets.all(8),
-                child: const Icon(Icons.search)),
-          ),
-          GestureDetector(
-            onTap: () => _navigateSettings(),
-            child: Container(
-              padding: const EdgeInsets.all(8),
-              child: const Icon(Icons.settings),
+  Widget _buildTopBar() {
+    List<Widget> pages = [];
+    pages.add(Icon(_pageIndex == 0 ? Icons.gps_fixed : Icons.gps_not_fixed,
+        color: Colors.grey[700], size: 18));
+    for (int i = 0; i < _allPlaces.length; i++) {
+      pages.add(Icon(
+          _pageIndex == i + 1 ? Icons.circle : Icons.radio_button_unchecked,
+          color: Colors.grey[700],
+          size: 18));
+    }
+    return Container(
+        padding: const EdgeInsets.all(4),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            GestureDetector(
+              onTap: () => _navigateSearch(),
+              child: Container(
+                  padding: const EdgeInsets.all(8),
+                  child: const Icon(Icons.search)),
             ),
-          )
-        ],
-      ));
+            Row(children: pages),
+            GestureDetector(
+              onTap: () => _navigateSettings(),
+              child: Container(
+                padding: const EdgeInsets.all(8),
+                child: const Icon(Icons.settings),
+              ),
+            )
+          ],
+        ));
+  }
 }
