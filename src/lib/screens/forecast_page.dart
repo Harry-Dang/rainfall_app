@@ -172,6 +172,10 @@ class ForecastPage extends StatelessWidget {
             (hourlyData[index].id <= 531 && hourlyData[index].id >= 200)
         ? (hourlyData[index].rain * 100).toInt().toString() + "%"
         : '';
+    Color? textColor =
+        barColor == Colors.grey[600] || barColor == Colors.purple[900]
+            ? Colors.white
+            : Colors.black;
     return Container(
         padding: EdgeInsets.only(
             top: 10, bottom: 10, left: hour.length == 5 ? 32 : 40, right: 40),
@@ -184,8 +188,12 @@ class ForecastPage extends StatelessWidget {
               width:
                   (hourlyMaxWidth - hourlyMinWidth) * tempBar + hourlyMinWidth,
               child: Container(
-                  padding: const EdgeInsets.only(left: 8, top: 3),
-                  child: Text(rain)),
+                padding: const EdgeInsets.only(left: 8, top: 3),
+                child: Text(
+                  rain,
+                  style: TextStyle(color: textColor),
+                ),
+              ),
               decoration: BoxDecoration(
                   color: barColor,
                   borderRadius: const BorderRadius.all(Radius.circular(90.0)),
