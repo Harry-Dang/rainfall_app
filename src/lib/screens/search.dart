@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:src/forecast/forecast.dart';
+import 'package:src/screens/forecast_page.dart';
 
 import 'package:src/search/search.dart';
 import 'package:src/util/save.dart';
@@ -74,21 +76,27 @@ class _SearchBodyState extends State<SearchBody> {
               maxLines: 1,
               onEditingComplete: () async {
                 FocusScope.of(context).unfocus();
+                List<Places> results = [];
                 if (_searchController.text.isNotEmpty) {
-                  _results = await search(_searchController.text);
+                  results = await search(_searchController.text);
                 } else {
-                  _results = [];
+                  results = [];
                 }
-                setState(() {});
+                setState(() {
+                  _results = results;
+                });
               },
               onSubmitted: (String value) async {
                 FocusScope.of(context).unfocus();
+                List<Places> results = [];
                 if (value.isNotEmpty) {
-                  _results = await search(value);
+                  results = await search(value);
                 } else {
-                  _results = [];
+                  results = [];
                 }
-                setState(() {});
+                setState(() {
+                  _results = results;
+                });
               },
               decoration: const InputDecoration(
                   border: OutlineInputBorder(), labelText: 'Search'),
@@ -120,7 +128,11 @@ class _SearchBodyState extends State<SearchBody> {
               itemBuilder: (context, index) {
                 return GestureDetector(
                   onTap: () {
-                    Navigator.pop(context, _results[index]);
+                    Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                            builder: (context) =>
+                                _buildTemporaryPage(context, _results[index])));
                   },
                   child: ListTile(
                     title: Text(_results[index].name),
@@ -146,5 +158,50 @@ class _SearchBodyState extends State<SearchBody> {
     } else {
       return Container();
     }
+  }
+
+  Widget _buildTemporaryPage(BuildContext context, Places place) {
+    return Scaffold(
+      body: SafeArea(
+        child: Column(
+          children: [
+            // top bar
+            Container(
+                padding: const EdgeInsets.all(4),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    GestureDetector(
+                        onTap: () {
+                          Navigator.pop(context);
+                        },
+                        child: Container(
+                            padding: const EdgeInsets.all(8),
+                            child: const Icon(Icons.arrow_back))),
+                    GestureDetector(
+                      onTap: () {
+                        // TODO save this location
+                        try {
+                          saveLocation(place);
+                        } catch (e) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(content: Text(e.toString())));
+                        }
+                        Navigator.pop(context);
+                        Navigator.pop(context, place);
+                      },
+                      child: Container(
+                          padding: const EdgeInsets.all(8),
+                          child: const Icon(Icons.add)),
+                    )
+                  ],
+                )),
+            // body
+            Expanded(
+                child: ForecastPage(forecastData: ForecastData(place: place)))
+          ],
+        ),
+      ),
+    );
   }
 }

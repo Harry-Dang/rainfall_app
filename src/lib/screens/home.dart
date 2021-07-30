@@ -84,7 +84,6 @@ class _HomeForecastState extends State<HomeForecast> {
 
   void _navigateSettings() async {
     dynamic result = await Navigator.pushNamed(context, '/settings');
-    // _pages[_pageController.page!.toInt()].refresh(result ?? false);
     if (result ?? false) {
       setState(() {});
     }
@@ -92,10 +91,14 @@ class _HomeForecastState extends State<HomeForecast> {
 
   void _navigateSearch() async {
     dynamic result = await Navigator.pushNamed(context, '/search');
-    if (result == null || result is Places) {
-      // _place = result;
-      // _refresh(_isRefreshNeeded());
-      setState(() {});
+    if (result == null) {
+      _pageController.jumpToPage(0);
+    }
+    if (result is Places) {
+      setState(() {
+        saveLocation(result);
+        _allPlaces.add(result);
+      });
     }
   }
 
