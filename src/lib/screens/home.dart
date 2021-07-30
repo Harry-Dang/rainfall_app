@@ -36,8 +36,7 @@ class _HomeForecastState extends State<HomeForecast> {
   late Future<List<Places>> _futureAllPlaces;
   List<Places> _allPlaces = [];
 
-  List<ForecastData> _allForecastData = [];
-  List<ForecastPage> _pages = [];
+  final List<ForecastData> _allForecastData = [];
 
   final PageController _pageController =
       PageController(initialPage: 0, keepPage: true);
@@ -71,11 +70,12 @@ class _HomeForecastState extends State<HomeForecast> {
                 itemCount: _allPlaces.length + 1,
                 itemBuilder: (context, index) {
                   if (index == 0) {
-                    return ForecastPage(forecastData: ForecastData());
+                    _allForecastData.add(ForecastData());
+                    return ForecastPage(forecastData: _allForecastData[index]);
                   } else {
-                    return ForecastPage(
-                        forecastData:
-                            ForecastData(place: _allPlaces[index - 1]));
+                    _allForecastData
+                        .add(ForecastData(place: _allPlaces[index - 1]));
+                    return ForecastPage(forecastData: _allForecastData[index]);
                   }
                 },
                 onPageChanged: (int page) {

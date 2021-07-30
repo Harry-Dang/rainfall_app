@@ -18,36 +18,46 @@ class ForecastPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return FutureBuilder(
-      future: forecastData.refresh(),
-      builder: (context, snapshot) {
-        if (snapshot.hasData) {
-          if (snapshot.data == true) {
-            if (forecastData.ready) {
-              return RefreshIndicator(
-                  child: ListView(
-                    children: [_buildHeader(), _buildBody(context)],
-                  ),
-                  onRefresh: () async {
-                    forecastData.refresh();
-                  });
+    if (forecastData.ready) {
+      return RefreshIndicator(
+          child: ListView(
+            children: [_buildHeader(), _buildBody(context)],
+          ),
+          onRefresh: () async {
+            forecastData.refresh();
+          });
+    } else {
+      return FutureBuilder(
+        future: forecastData.refresh(),
+        builder: (context, snapshot) {
+          if (snapshot.hasData) {
+            if (snapshot.data == true) {
+              if (forecastData.ready) {
+                return RefreshIndicator(
+                    child: ListView(
+                      children: [_buildHeader(), _buildBody(context)],
+                    ),
+                    onRefresh: () async {
+                      forecastData.refresh();
+                    });
+              } else {
+                return const Center(
+                  child: Text('forecastData not ready'),
+                );
+              }
             } else {
-              return const Center(
-                child: Text('forecastData not ready'),
+              return Center(
+                child: Text(snapshot.data.toString()),
               );
             }
+          } else if (snapshot.hasError) {
+            return const Text('error');
           } else {
-            return Center(
-              child: Text(snapshot.data.toString()),
-            );
+            return const Center(child: CircularProgressIndicator());
           }
-        } else if (snapshot.hasError) {
-          return const Text('error');
-        } else {
-          return const Center(child: CircularProgressIndicator());
-        }
-      },
-    );
+        },
+      );
+    }
   }
 
   Widget _buildHeader() => Container(
