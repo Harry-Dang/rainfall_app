@@ -36,7 +36,7 @@ class _HomeForecastState extends State<HomeForecast> {
   late Future<List<Places>> _futureAllPlaces;
   List<Places> _allPlaces = [];
 
-  final List<ForecastData> _allForecastData = [];
+  List<ForecastData> _allForecastData = [];
 
   final PageController _pageController =
       PageController(initialPage: 0, keepPage: true);
@@ -69,13 +69,38 @@ class _HomeForecastState extends State<HomeForecast> {
                 controller: _pageController,
                 itemCount: _allPlaces.length + 1,
                 itemBuilder: (context, index) {
-                  if (index == 0) {
-                    _allForecastData.add(ForecastData());
-                    return ForecastPage(forecastData: _allForecastData[index]);
+                  if (index >= _allForecastData.length) {
+                    print(index);
+                    if (index == 0) {
+                      // gps location
+                      _allForecastData.add(ForecastData());
+                      return ForecastPage(
+                        forecastData: _allForecastData[index],
+                        refresh: () async {
+                          await _allForecastData[index].refresh();
+                          setState(() {});
+                        },
+                      );
+                    } else {
+                      // saved location
+                      print(_allPlaces[index - 1].name);
+                      _allForecastData
+                          .add(ForecastData(place: _allPlaces[index - 1]));
+                      return ForecastPage(
+                          forecastData: _allForecastData[index],
+                          refresh: () async {
+                            await _allForecastData[index].refresh();
+                            setState(() {});
+                          });
+                    }
                   } else {
-                    _allForecastData
-                        .add(ForecastData(place: _allPlaces[index - 1]));
-                    return ForecastPage(forecastData: _allForecastData[index]);
+                    // cached location
+                    return ForecastPage(
+                        forecastData: _allForecastData[index],
+                        refresh: () async {
+                          await _allForecastData[index].refresh();
+                          setState(() {});
+                        });
                   }
                 },
                 onPageChanged: (int page) {
@@ -96,10 +121,18 @@ class _HomeForecastState extends State<HomeForecast> {
   void _navigateSettings() async {
     dynamic result = await Navigator.pushNamed(context, '/settings');
     if (result ?? false) {
-      List<Places> result = await getPlaces();
+      _pageController.jumpToPage(0);
+      _futureAllPlaces = getPlaces();
+      _allPlaces = await _futureAllPlaces;
       setState(() {
-        _futureAllPlaces = getPlaces();
-        _allPlaces = result;
+        _allForecastData = [];
+        for (int i = 0; i < _allPlaces.length + 1; i++) {
+          if (i == 0) {
+            _allForecastData.add(ForecastData());
+          } else {
+            _allForecastData.add(ForecastData(place: _allPlaces[i - 1]));
+          }
+        }
       });
     }
   }
@@ -110,8 +143,8 @@ class _HomeForecastState extends State<HomeForecast> {
       _pageController.jumpToPage(0);
     }
     if (result is Places) {
+      await saveLocation(result);
       setState(() {
-        saveLocation(result);
         _allPlaces.add(result);
       });
       WidgetsBinding.instance!.addPostFrameCallback((duration) {

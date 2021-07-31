@@ -131,8 +131,10 @@ class _SearchBodyState extends State<SearchBody> {
                     Navigator.push(
                         context,
                         MaterialPageRoute(
-                            builder: (context) =>
-                                _buildTemporaryPage(context, _results[index])));
+                            builder: (context) => TemporaryPage(
+                                place: _results[index],
+                                save: alreadySaved(
+                                    _savedPlaces, _results[index]))));
                   },
                   child: ListTile(
                     title: Text(_results[index].name),
@@ -159,8 +161,30 @@ class _SearchBodyState extends State<SearchBody> {
       return Container();
     }
   }
+}
 
-  Widget _buildTemporaryPage(BuildContext context, Places place) {
+class TemporaryPage extends StatefulWidget {
+  final Places place;
+  final bool save;
+
+  const TemporaryPage({Key? key, required this.place, required this.save})
+      : super(key: key);
+
+  @override
+  _TemporaryPageState createState() => _TemporaryPageState();
+}
+
+class _TemporaryPageState extends State<TemporaryPage> {
+  final ForecastData _forecastData = ForecastData();
+
+  @override
+  void initState() {
+    super.initState();
+    _forecastData.refresh(widget.place);
+  }
+
+  @override
+  Widget build(BuildContext context) {
     return Scaffold(
       body: SafeArea(
         child: Column(
@@ -181,23 +205,30 @@ class _SearchBodyState extends State<SearchBody> {
                     GestureDetector(
                       onTap: () {
                         try {
-                          saveLocation(place);
+                          saveLocation(widget.place);
                         } catch (e) {
                           ScaffoldMessenger.of(context).showSnackBar(
                               SnackBar(content: Text(e.toString())));
                         }
                         Navigator.pop(context);
-                        Navigator.pop(context, place);
+                        Navigator.pop(context, widget.place);
                       },
-                      child: Container(
-                          padding: const EdgeInsets.all(8),
-                          child: const Icon(Icons.add)),
+                      child: widget.save
+                          ? Container()
+                          : Container(
+                              padding: const EdgeInsets.all(8),
+                              child: const Icon(Icons.add)),
                     )
                   ],
                 )),
             // body
             Expanded(
-                child: ForecastPage(forecastData: ForecastData(place: place)))
+                child: ForecastPage(
+                    forecastData: _forecastData,
+                    refresh: () async {
+                      await _forecastData.refresh();
+                      setState(() {});
+                    }))
           ],
         ),
       ),

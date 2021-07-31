@@ -13,8 +13,11 @@ const String weatherIcons = 'assets/icons/weather/';
 
 class ForecastPage extends StatelessWidget {
   final ForecastData forecastData;
+  final VoidCallback refresh;
 
-  const ForecastPage({Key? key, required this.forecastData}) : super(key: key);
+  const ForecastPage(
+      {Key? key, required this.forecastData, required this.refresh})
+      : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -24,7 +27,8 @@ class ForecastPage extends StatelessWidget {
             children: [_buildHeader(), _buildBody(context)],
           ),
           onRefresh: () async {
-            forecastData.refresh();
+            // forecastData.refresh();
+            refresh();
           });
     } else {
       return FutureBuilder(
@@ -38,7 +42,8 @@ class ForecastPage extends StatelessWidget {
                       children: [_buildHeader(), _buildBody(context)],
                     ),
                     onRefresh: () async {
-                      forecastData.refresh();
+                      // forecastData.refresh();
+                      refresh();
                     });
               } else {
                 return const Center(
@@ -293,6 +298,10 @@ class ForecastPage extends StatelessWidget {
               (dailyData.high - forecastData.dailyMin!) /
                   (forecastData.dailyMax! - forecastData.dailyMin!)) *
           dailyMaxHeight;
+      String rain =
+          dailyData.rain >= 0.25 || (dailyData.id <= 531 && dailyData.id >= 200)
+              ? (dailyData.rain * 100).toInt().toString() + "%"
+              : '';
       daily.add(Container(
         padding: const EdgeInsets.all(8),
         child: Column(
@@ -314,6 +323,7 @@ class ForecastPage extends StatelessWidget {
                 margin: const EdgeInsets.only(top: 8, bottom: 8),
                 height: barLength,
                 width: 24,
+                child: Text(rain),
                 decoration: BoxDecoration(
                   color: barColor,
                   borderRadius: const BorderRadius.all(Radius.circular(90.0)),
