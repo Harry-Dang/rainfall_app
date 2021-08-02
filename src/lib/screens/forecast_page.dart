@@ -158,7 +158,11 @@ class _ForecastPageState extends State<ForecastPage> {
       widgets.add(_buildHour(context, i));
     }
     widgets.add(_buildDetails());
-    widgets.add(_buildDaily());
+    if (_dailyExpand == -1) {
+      widgets.add(_buildDaily());
+    } else {
+      widgets.add(_buildDailyDetail());
+    }
     return Column(
       children: widgets,
     );
@@ -295,6 +299,7 @@ class _ForecastPageState extends State<ForecastPage> {
           ),
           // right column
           Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               // feels like
               Row(
@@ -466,21 +471,208 @@ class _ForecastPageState extends State<ForecastPage> {
   Widget _buildDaily() {
     List<Widget> daily = [];
     for (int i = 0; i < widget.forecastData.dailyData.length; i++) {
-      DailyForecast dailyData = widget.forecastData.dailyData[i];
-      Color? barColor = getBarColor(dailyData.id, true);
-      double barLength = (dailyData.high.round() - dailyData.low.round()) /
-          (widget.forecastData.dailyMax! - widget.forecastData.dailyMin!) *
-          dailyMaxHeight;
-      double topPadding = (1 -
-              (dailyData.high - widget.forecastData.dailyMin!) /
-                  (widget.forecastData.dailyMax! -
-                      widget.forecastData.dailyMin!)) *
-          dailyMaxHeight;
-      String rain =
-          dailyData.rain >= 0.25 || (dailyData.id <= 531 && dailyData.id >= 200)
-              ? (dailyData.rain * 100).toInt().toString() + "%"
-              : '';
-      daily.add(Container(
+      daily.add(_buildDailyBar(i, false));
+    }
+    return Container(
+      padding: const EdgeInsets.only(top: 8, bottom: 8, left: 24, right: 24),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: daily,
+      ),
+    );
+  }
+
+  Widget _buildDailyDetail() {
+    DailyForecast dailyData = widget.forecastData.dailyData[_dailyExpand];
+    double deviceWidth = MediaQuery.of(context).size.shortestSide;
+    return GestureDetector(
+      behavior: HitTestBehavior.opaque,
+      child: Container(
+        padding: const EdgeInsets.all(16),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+          children: [
+            _buildDailyBar(_dailyExpand, true),
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceAround,
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.all(4),
+                      margin: EdgeInsets.only(right: deviceWidth * 0.1),
+                      child: Text(
+                        getDate(dailyData.date),
+                        style: const TextStyle(fontSize: 18),
+                      ),
+                    ),
+                    Column(
+                      children: [
+                        Container(
+                          padding: const EdgeInsets.all(4),
+                          child: getIcon(dailyData.id, true,
+                              width: 60, height: 60),
+                        ),
+                        Text(dailyData.weather)
+                      ],
+                    )
+                  ],
+                ),
+                Container(
+                    // color: Colors.green,
+                    padding: const EdgeInsets.all(16),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceAround,
+                      children: [
+                        // left column
+                        Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            // humidity
+                            Row(
+                              children: [
+                                Container(
+                                  padding: const EdgeInsets.all(4),
+                                  margin: const EdgeInsets.only(right: 4),
+                                  child: SvgPicture.asset(
+                                      weatherIcons + 'humidity.svg',
+                                      width: 32,
+                                      height: 32),
+                                ),
+                                Container(
+                                  padding: const EdgeInsets.all(4),
+                                  child: Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      const Text('Humidity'),
+                                      Text(dailyData.humidity
+                                              .round()
+                                              .toString() +
+                                          '%')
+                                    ],
+                                  ),
+                                )
+                              ],
+                            ),
+                            // wind
+                            Row(
+                              children: [
+                                Container(
+                                  padding: const EdgeInsets.all(4),
+                                  margin: const EdgeInsets.only(right: 4),
+                                  child: SvgPicture.asset(
+                                    weatherIcons + 'windy.svg',
+                                    width: 32,
+                                    height: 32,
+                                  ),
+                                ),
+                                Container(
+                                    padding: const EdgeInsets.all(4),
+                                    child: Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      children: [
+                                        const Text('Wind'),
+                                        Text(dailyData.windSpeed.toString() +
+                                            ' ' +
+                                            getSpeedUnit(widget
+                                                .forecastData.isImperial) +
+                                            ' ' +
+                                            getWindDirection(dailyData.windDeg))
+                                      ],
+                                    ))
+                              ],
+                            )
+                          ],
+                        ),
+                        // right column
+                        Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Row(
+                              children: [
+                                Container(
+                                  padding: const EdgeInsets.all(4),
+                                  margin: const EdgeInsets.only(right: 4),
+                                  child: SvgPicture.asset(
+                                      weatherIcons + 'sun.svg',
+                                      width: 32,
+                                      height: 32),
+                                ),
+                                Container(
+                                  padding: const EdgeInsets.all(4),
+                                  child: Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      const Text('UV Index'),
+                                      Text(dailyData.uvi.toString())
+                                    ],
+                                  ),
+                                )
+                              ],
+                            ),
+                            Row(
+                              children: [
+                                Container(
+                                    padding: const EdgeInsets.all(4),
+                                    margin: const EdgeInsets.only(right: 4),
+                                    child: SvgPicture.asset(
+                                        weatherIcons + 'compass.svg',
+                                        width: 32,
+                                        height: 32)),
+                                Container(
+                                    padding: const EdgeInsets.all(4),
+                                    child: Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      children: [
+                                        const Text('Pressure'),
+                                        Text(dailyData.pressure.toString() +
+                                            ' ' +
+                                            'hPa')
+                                      ],
+                                    ))
+                              ],
+                            )
+                          ],
+                        )
+                      ],
+                    ))
+              ],
+            ),
+          ],
+        ),
+      ),
+      onTap: () {
+        setState(() {
+          _dailyExpand = -1;
+        });
+      },
+    );
+  }
+
+  Widget _buildDailyBar(int i, bool expanded) {
+    DailyForecast dailyData = widget.forecastData.dailyData[i];
+    Color? barColor = getBarColor(dailyData.id, true);
+    double barLength = (dailyData.high.round() - dailyData.low.round()) /
+        (widget.forecastData.dailyMax! - widget.forecastData.dailyMin!) *
+        dailyMaxHeight;
+    double topPadding = (1 -
+            (dailyData.high - widget.forecastData.dailyMin!) /
+                (widget.forecastData.dailyMax! -
+                    widget.forecastData.dailyMin!)) *
+        dailyMaxHeight;
+    String rain =
+        dailyData.rain >= 0.25 || (dailyData.id <= 531 && dailyData.id >= 200)
+            ? (dailyData.rain * 100).toInt().toString() + "%"
+            : '';
+    return GestureDetector(
+      behavior: HitTestBehavior.opaque,
+      child: Container(
         padding: const EdgeInsets.all(8),
         child: Column(
           children: [
@@ -501,7 +693,6 @@ class _ForecastPageState extends State<ForecastPage> {
                 margin: const EdgeInsets.only(top: 8, bottom: 8),
                 height: barLength,
                 width: 24,
-                child: Text(rain),
                 decoration: BoxDecoration(
                   color: barColor,
                   borderRadius: const BorderRadius.all(Radius.circular(90.0)),
@@ -511,21 +702,27 @@ class _ForecastPageState extends State<ForecastPage> {
                           : Colors.transparent),
                 )),
             Container(
-              padding: const EdgeInsets.only(bottom: 8),
               child: Text(dailyData.low.round().toString() +
                   getUnit(widget.forecastData.isImperial)),
+            ),
+            Container(
+              padding: const EdgeInsets.all(8),
+              child: Text(rain),
             )
           ],
         ),
-      ));
-    }
-    return Container(
-      padding: const EdgeInsets.only(top: 8, bottom: 8, left: 24, right: 24),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: daily,
       ),
+      onTap: () {
+        if (expanded) {
+          setState(() {
+            _dailyExpand = -1;
+          });
+        } else {
+          setState(() {
+            _dailyExpand = i;
+          });
+        }
+      },
     );
   }
 }

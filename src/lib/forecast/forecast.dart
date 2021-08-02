@@ -177,6 +177,12 @@ class DailyForecast {
   double low;
   double rain;
   int id;
+  String weather;
+  double humidity;
+  double uvi;
+  double windSpeed;
+  double windDeg;
+  double pressure;
 
   DailyForecast(
       {required this.date,
@@ -185,7 +191,13 @@ class DailyForecast {
       required this.high,
       required this.low,
       required this.rain,
-      required this.id});
+      required this.id,
+      required this.weather,
+      required this.humidity,
+      required this.uvi,
+      required this.windSpeed,
+      required this.windDeg,
+      required this.pressure});
 
   factory DailyForecast.fromJson(Map<String, dynamic> json) {
     return DailyForecast(
@@ -195,6 +207,12 @@ class DailyForecast {
         high: json['temp']['max'].toDouble(),
         low: json['temp']['min'].toDouble(),
         rain: json['pop'].toDouble() ?? 0,
-        id: json['weather'][0]['id']);
+        id: json['weather'][0]['id'],
+        weather: json['weather'][0]['description'],
+        humidity: json['humidity'].toDouble(),
+        uvi: json['uvi'].toDouble(),
+        windSpeed: json['wind_speed'].toDouble(),
+        windDeg: json['wind_deg'].toDouble(),
+        pressure: json['pressure'].toDouble());
   }
 }
