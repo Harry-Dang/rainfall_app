@@ -192,39 +192,43 @@ class _ReorderPageState extends State<ReorderPage> {
         builder: (context, snapshot) {
           if (snapshot.hasData) {
             _allPlaces = snapshot.data!;
-            return Expanded(
-                child: ReorderableListView.builder(
-              padding: const EdgeInsets.all(4),
-              itemBuilder: (context, index) {
-                return ListTile(
-                    key: Key('$index'),
-                    title: Text(snapshot.data![index].name),
-                    leading: const Icon(Icons.drag_handle),
-                    trailing: GestureDetector(
-                      child: const Icon(Icons.delete),
-                      onTap: () {
-                        setState(() {
-                          _isDirty = true;
-                          _allPlaces!.removeAt(index);
-                          saveAllLocations(_allPlaces!);
-                        });
-                      },
-                    ));
-              },
-              itemCount: snapshot.data!.length,
-              onReorder: (int oldIndex, int newIndex) {
-                if (oldIndex < newIndex) {
-                  newIndex -= 1;
-                }
-                setState(() {
-                  final Places item = _allPlaces!.removeAt(oldIndex);
-                  _allPlaces!.insert(newIndex, item);
-                  saveAllLocations(_allPlaces!);
-                  _isDirty = true;
-                });
-              },
-              buildDefaultDragHandles: true,
-            ));
+            if (_allPlaces!.isEmpty) {
+              return const Center(child: Text('No saved locations.'));
+            } else {
+              return Expanded(
+                  child: ReorderableListView.builder(
+                padding: const EdgeInsets.all(4),
+                itemBuilder: (context, index) {
+                  return ListTile(
+                      key: Key('$index'),
+                      title: Text(snapshot.data![index].name),
+                      leading: const Icon(Icons.drag_handle),
+                      trailing: GestureDetector(
+                        child: const Icon(Icons.delete),
+                        onTap: () {
+                          setState(() {
+                            _isDirty = true;
+                            _allPlaces!.removeAt(index);
+                            saveAllLocations(_allPlaces!);
+                          });
+                        },
+                      ));
+                },
+                itemCount: snapshot.data!.length,
+                onReorder: (int oldIndex, int newIndex) {
+                  if (oldIndex < newIndex) {
+                    newIndex -= 1;
+                  }
+                  setState(() {
+                    final Places item = _allPlaces!.removeAt(oldIndex);
+                    _allPlaces!.insert(newIndex, item);
+                    saveAllLocations(_allPlaces!);
+                    _isDirty = true;
+                  });
+                },
+                buildDefaultDragHandles: true,
+              ));
+            }
           } else if (snapshot.hasError) {
             return Center(child: Text(snapshot.error.toString()));
           } else {

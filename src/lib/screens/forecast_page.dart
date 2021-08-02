@@ -474,7 +474,7 @@ class _ForecastPageState extends State<ForecastPage> {
       daily.add(_buildDailyBar(i, false));
     }
     return Container(
-      padding: const EdgeInsets.only(top: 8, bottom: 8, left: 24, right: 24),
+      padding: const EdgeInsets.only(top: 8, bottom: 8, left: 16, right: 16),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
         crossAxisAlignment: CrossAxisAlignment.start,
