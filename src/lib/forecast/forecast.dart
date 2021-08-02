@@ -130,21 +130,42 @@ class CurrentInfo {
 class HourlyForecast {
   DateTime time;
   double temp;
+  double feelsLike;
   double rain;
   int id;
+  String weather;
+  double humidity;
+  double uvi;
+  double windSpeed;
+  double windDeg;
+  double pressure;
 
   HourlyForecast(
       {required this.time,
       required this.temp,
+      required this.feelsLike,
       required this.rain,
-      required this.id});
+      required this.id,
+      required this.weather,
+      required this.humidity,
+      required this.uvi,
+      required this.windSpeed,
+      required this.windDeg,
+      required this.pressure});
 
   factory HourlyForecast.fromJson(Map<String, dynamic> json) {
     return HourlyForecast(
         time: DateTime.fromMillisecondsSinceEpoch(json['dt'] * 1000),
         temp: json['temp'].toDouble(),
+        feelsLike: json['feels_like'].toDouble(),
         rain: json['pop'].toDouble() ?? 0,
-        id: json['weather'][0]['id']);
+        id: json['weather'][0]['id'],
+        weather: json['weather'][0]['description'],
+        humidity: json['humidity'].toDouble(),
+        uvi: json['uvi'].toDouble(),
+        windSpeed: json['wind_speed'].toDouble(),
+        windDeg: json['wind_deg'].toDouble(),
+        pressure: json['pressure'].toDouble());
   }
 }
 

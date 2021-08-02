@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
-import 'package:src/util/preferences.dart';
 
 const String weatherIcons = 'assets/icons/weather/';
 
@@ -127,4 +126,8 @@ String getUnit(bool isImperial) {
   // });
   // return unit;
   return isImperial ? 'ºF' : 'ºC';
+}
+
+String getSpeedUnit(bool isImperial) {
+  return isImperial ? 'mph' : 'm/s';
 }

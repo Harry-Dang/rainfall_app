@@ -11,7 +11,7 @@ const int dailyMaxHeight = 160;
 
 const String weatherIcons = 'assets/icons/weather/';
 
-class ForecastPage extends StatelessWidget {
+class ForecastPage extends StatefulWidget {
   final ForecastData forecastData;
   final VoidCallback refresh;
 
@@ -20,30 +20,38 @@ class ForecastPage extends StatelessWidget {
       : super(key: key);
 
   @override
+  _ForecastPageState createState() => _ForecastPageState();
+}
+
+class _ForecastPageState extends State<ForecastPage> {
+  int _hourlyExpand = -1;
+  int _dailyExpand = -1;
+
+  @override
   Widget build(BuildContext context) {
-    if (forecastData.ready) {
+    if (widget.forecastData.ready) {
       return RefreshIndicator(
           child: ListView(
             children: [_buildHeader(), _buildBody(context)],
           ),
           onRefresh: () async {
             // forecastData.refresh();
-            refresh();
+            widget.refresh();
           });
     } else {
       return FutureBuilder(
-        future: forecastData.refresh(),
+        future: widget.forecastData.refresh(),
         builder: (context, snapshot) {
           if (snapshot.hasData) {
             if (snapshot.data == true) {
-              if (forecastData.ready) {
+              if (widget.forecastData.ready) {
                 return RefreshIndicator(
                     child: ListView(
                       children: [_buildHeader(), _buildBody(context)],
                     ),
                     onRefresh: () async {
                       // forecastData.refresh();
-                      refresh();
+                      widget.refresh();
                     });
               } else {
                 return const Center(
@@ -76,7 +84,7 @@ class ForecastPage extends StatelessWidget {
         margin: const EdgeInsets.only(bottom: 15),
         child: Center(
             child: Text(
-          forecastData.currentInfo!.location,
+          widget.forecastData.currentInfo!.location,
           style: const TextStyle(fontSize: 18),
         )));
   }
@@ -103,7 +111,7 @@ class ForecastPage extends StatelessWidget {
                 child: Align(
                     alignment: Alignment.topLeft,
                     child: Text(
-                      getDate(forecastData.currentInfo!.date),
+                      getDate(widget.forecastData.currentInfo!.date),
                       style: const TextStyle(fontSize: 12),
                     ))),
             Container(
@@ -111,7 +119,7 @@ class ForecastPage extends StatelessWidget {
                 child: Align(
                   alignment: Alignment.topLeft,
                   child: Text(
-                    getTime(forecastData.currentInfo!.date),
+                    getTime(widget.forecastData.currentInfo!.date),
                     style: const TextStyle(fontSize: 12),
                   ),
                 ))
@@ -120,13 +128,13 @@ class ForecastPage extends StatelessWidget {
   Widget _buildTemp() => Column(
         children: [
           Text(
-            forecastData.currentData!.temp.round().toString() +
-                getUnit(forecastData.isImperial),
+            widget.forecastData.currentData!.temp.round().toString() +
+                getUnit(widget.forecastData.isImperial),
             style: const TextStyle(fontSize: 72),
           ),
           Text('feels like: ' +
-              forecastData.currentData!.feelsLike.round().toString() +
-              getUnit(forecastData.isImperial))
+              widget.forecastData.currentData!.feelsLike.round().toString() +
+              getUnit(widget.forecastData.isImperial))
         ],
       );
 
@@ -135,18 +143,18 @@ class ForecastPage extends StatelessWidget {
       child: Column(
         children: [
           getIcon(
-              forecastData.currentData!.id,
+              widget.forecastData.currentData!.id,
               isDay(
-                  forecastData.currentInfo!.date,
-                  forecastData.currentData!.sunrise,
-                  forecastData.currentData!.sunset)),
-          Text(forecastData.currentData!.weather)
+                  widget.forecastData.currentInfo!.date,
+                  widget.forecastData.currentData!.sunrise,
+                  widget.forecastData.currentData!.sunset)),
+          Text(widget.forecastData.currentData!.weather)
         ],
       ));
 
   Widget _buildBody(BuildContext context) {
     List<Widget> widgets = [];
-    for (int i = 0; i < forecastData.hourlyData.length; i++) {
+    for (int i = 0; i < widget.forecastData.hourlyData.length; i++) {
       widgets.add(_buildHour(context, i));
     }
     widgets.add(_buildDetails());
@@ -157,22 +165,22 @@ class ForecastPage extends StatelessWidget {
   }
 
   Widget _buildHour(BuildContext context, int index) {
-    List<HourlyForecast> hourlyData = forecastData.hourlyData;
+    List<HourlyForecast> hourlyData = widget.forecastData.hourlyData;
     String hour = getHour(hourlyData[index].time);
     double hourlyMaxWidth = MediaQuery.of(context).size.shortestSide * 0.55;
-    double tempBar =
-        (hourlyData[index].temp.round() - forecastData.hourlyMin!.round()) /
-            (forecastData.hourlyMax!.round() - forecastData.hourlyMin!.round());
-    Color? barColor = getBarColor(
-        hourlyData[index].id,
-        isDay(
-            hourlyData[index].time,
-            hourlyData[index].time.day == forecastData.currentInfo!.date.day
-                ? forecastData.currentData!.sunrise
-                : forecastData.dailyData[1].sunrise,
-            hourlyData[index].time.day == forecastData.currentInfo!.date.day
-                ? forecastData.currentData!.sunset
-                : forecastData.dailyData[1].sunset));
+    double tempBar = (hourlyData[index].temp.round() -
+            widget.forecastData.hourlyMin!.round()) /
+        (widget.forecastData.hourlyMax!.round() -
+            widget.forecastData.hourlyMin!.round());
+    bool isDaytime = isDay(
+        hourlyData[index].time,
+        hourlyData[index].time.day == widget.forecastData.currentInfo!.date.day
+            ? widget.forecastData.currentData!.sunrise
+            : widget.forecastData.dailyData[1].sunrise,
+        hourlyData[index].time.day == widget.forecastData.currentInfo!.date.day
+            ? widget.forecastData.currentData!.sunset
+            : widget.forecastData.dailyData[1].sunset);
+    Color? barColor = getBarColor(hourlyData[index].id, isDaytime);
     String rain = hourlyData[index].rain >= 0.25 ||
             (hourlyData[index].id <= 531 && hourlyData[index].id >= 200)
         ? (hourlyData[index].rain * 100).toInt().toString() + "%"
@@ -181,7 +189,7 @@ class ForecastPage extends StatelessWidget {
         barColor == Colors.grey[600] || barColor == Colors.purple[900]
             ? Colors.white
             : Colors.black;
-    return Container(
+    Widget mainBar = Container(
         padding: EdgeInsets.only(
             top: 10, bottom: 10, left: hour.length == 5 ? 32 : 40, right: 40),
         child: Row(
@@ -208,9 +216,169 @@ class ForecastPage extends StatelessWidget {
                           : Colors.transparent)),
             ),
             Text(hourlyData[index].temp.round().toString() +
-                getUnit(forecastData.isImperial))
+                getUnit(widget.forecastData.isImperial))
           ],
         ));
+    if (_hourlyExpand == index) {
+      Widget details = Container(
+          padding: const EdgeInsets.all(4),
+          child: Column(
+            children: [
+              // weather and temp
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                children: [
+                  Row(
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.all(4),
+                        child: getIcon(hourlyData[index].id, isDaytime,
+                            width: 32, height: 32),
+                      ),
+                      Container(
+                        padding: const EdgeInsets.all(4),
+                        child: Text(hourlyData[index].weather),
+                      )
+                    ],
+                  ),
+                  Row(
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.all(4),
+                        child: SvgPicture.asset(
+                            weatherIcons + 'thermometer.svg',
+                            width: 32,
+                            height: 32),
+                      ),
+                      Container(
+                        padding: const EdgeInsets.all(4),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            const Text('Feels like'),
+                            Text(
+                                hourlyData[index].feelsLike.round().toString() +
+                                    getUnit(widget.forecastData.isImperial))
+                          ],
+                        ),
+                      )
+                    ],
+                  )
+                ],
+              ),
+              // humidity, UV index
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                children: [
+                  Row(
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.all(4),
+                        child: SvgPicture.asset(weatherIcons + 'humidity.svg',
+                            width: 32, height: 32),
+                      ),
+                      Container(
+                        padding: const EdgeInsets.all(4),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            const Text('Humidity'),
+                            Text(hourlyData[index].humidity.round().toString() +
+                                '%')
+                          ],
+                        ),
+                      )
+                    ],
+                  ),
+                  Row(
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.all(4),
+                        child: SvgPicture.asset(weatherIcons + 'sun.svg',
+                            width: 32, height: 32),
+                      ),
+                      Container(
+                        padding: const EdgeInsets.all(4),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            const Text('UV Index'),
+                            Text(hourlyData[index].uvi.toString())
+                          ],
+                        ),
+                      )
+                    ],
+                  )
+                ],
+              ),
+              // wind, pressure
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                children: [
+                  Row(
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.all(4),
+                        child: SvgPicture.asset(
+                          weatherIcons + 'windy.svg',
+                          width: 32,
+                          height: 32,
+                        ),
+                      ),
+                      Container(
+                          padding: const EdgeInsets.all(4),
+                          child: Column(
+                            children: [
+                              Text(hourlyData[index].windSpeed.toString() +
+                                  ' ' +
+                                  getSpeedUnit(widget.forecastData.isImperial)),
+                              Text(hourlyData[index].windDeg.toString() + 'º')
+                            ],
+                          ))
+                    ],
+                  ),
+                  Row(
+                    children: [
+                      Container(
+                          padding: const EdgeInsets.all(4),
+                          child: SvgPicture.asset(weatherIcons + 'compass.svg',
+                              width: 32, height: 32)),
+                      Container(
+                          padding: const EdgeInsets.all(4),
+                          child: Column(
+                            children: [
+                              const Text('Pressure'),
+                              Text(hourlyData[index].pressure.toString() +
+                                  ' ' +
+                                  'hPa')
+                            ],
+                          ))
+                    ],
+                  )
+                ],
+              )
+            ],
+          ));
+      return GestureDetector(
+        child: Column(
+          children: [mainBar, details],
+        ),
+        onTap: () {
+          setState(() {
+            _hourlyExpand = -1;
+          });
+        },
+      );
+    } else {
+      return GestureDetector(
+        child: mainBar,
+        onTap: () {
+          setState(() {
+            _hourlyExpand = index;
+          });
+        },
+      );
+    }
   }
 
   Widget _buildDetails() => Container(
@@ -229,7 +397,8 @@ class ForecastPage extends StatelessWidget {
                         width: 48.0, height: 48.0),
                     Container(
                         padding: const EdgeInsets.only(left: 8, right: 8),
-                        child: Text(getTime(forecastData.currentData!.sunrise)))
+                        child: Text(
+                            getTime(widget.forecastData.currentData!.sunrise)))
                   ]),
                   Row(
                     children: [
@@ -238,7 +407,7 @@ class ForecastPage extends StatelessWidget {
                       Container(
                           padding: const EdgeInsets.only(left: 8, right: 8),
                           child: Text(
-                            getTime(forecastData.currentData!.sunset),
+                            getTime(widget.forecastData.currentData!.sunset),
                           ))
                     ],
                   )
@@ -258,10 +427,10 @@ class ForecastPage extends StatelessWidget {
                               width: 48.0, height: 48.0),
                           Container(
                               padding: const EdgeInsets.only(left: 8, right: 8),
-                              child: Text(forecastData.dailyData[0].high
+                              child: Text(widget.forecastData.dailyData[0].high
                                       .round()
                                       .toString() +
-                                  getUnit(forecastData.isImperial)))
+                                  getUnit(widget.forecastData.isImperial)))
                         ],
                       ),
                       Row(
@@ -273,10 +442,11 @@ class ForecastPage extends StatelessWidget {
                               Container(
                                   padding:
                                       const EdgeInsets.only(left: 8, right: 8),
-                                  child: Text(forecastData.dailyData[0].low
+                                  child: Text(widget
+                                          .forecastData.dailyData[0].low
                                           .round()
                                           .toString() +
-                                      getUnit(forecastData.isImperial)))
+                                      getUnit(widget.forecastData.isImperial)))
                             ],
                           )
                         ],
@@ -288,15 +458,16 @@ class ForecastPage extends StatelessWidget {
 
   Widget _buildDaily() {
     List<Widget> daily = [];
-    for (int i = 0; i < forecastData.dailyData.length; i++) {
-      DailyForecast dailyData = forecastData.dailyData[i];
+    for (int i = 0; i < widget.forecastData.dailyData.length; i++) {
+      DailyForecast dailyData = widget.forecastData.dailyData[i];
       Color? barColor = getBarColor(dailyData.id, true);
       double barLength = (dailyData.high.round() - dailyData.low.round()) /
-          (forecastData.dailyMax! - forecastData.dailyMin!) *
+          (widget.forecastData.dailyMax! - widget.forecastData.dailyMin!) *
           dailyMaxHeight;
       double topPadding = (1 -
-              (dailyData.high - forecastData.dailyMin!) /
-                  (forecastData.dailyMax! - forecastData.dailyMin!)) *
+              (dailyData.high - widget.forecastData.dailyMin!) /
+                  (widget.forecastData.dailyMax! -
+                      widget.forecastData.dailyMin!)) *
           dailyMaxHeight;
       String rain =
           dailyData.rain >= 0.25 || (dailyData.id <= 531 && dailyData.id >= 200)
@@ -317,7 +488,7 @@ class ForecastPage extends StatelessWidget {
             Container(
               padding: EdgeInsets.only(top: topPadding),
               child: Text(dailyData.high.round().toString() +
-                  getUnit(forecastData.isImperial)),
+                  getUnit(widget.forecastData.isImperial)),
             ),
             Container(
                 margin: const EdgeInsets.only(top: 8, bottom: 8),
@@ -335,7 +506,7 @@ class ForecastPage extends StatelessWidget {
             Container(
               padding: const EdgeInsets.only(bottom: 8),
               child: Text(dailyData.low.round().toString() +
-                  getUnit(forecastData.isImperial)),
+                  getUnit(widget.forecastData.isImperial)),
             )
           ],
         ),
