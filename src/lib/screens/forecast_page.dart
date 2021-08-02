@@ -221,145 +221,149 @@ class _ForecastPageState extends State<ForecastPage> {
         ));
     if (_hourlyExpand == index) {
       Widget details = Container(
-          padding: const EdgeInsets.all(4),
-          child: Column(
+        padding: const EdgeInsets.only(left: 16, right: 16, bottom: 16),
+        child: Row(mainAxisAlignment: MainAxisAlignment.spaceEvenly, children: [
+          // left column
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // weather and temp
+              // weather
               Row(
-                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                 children: [
-                  Row(
-                    children: [
-                      Container(
-                        padding: const EdgeInsets.all(4),
-                        child: getIcon(hourlyData[index].id, isDaytime,
-                            width: 32, height: 32),
-                      ),
-                      Container(
-                        padding: const EdgeInsets.all(4),
-                        child: Text(hourlyData[index].weather),
-                      )
-                    ],
+                  Container(
+                    padding: const EdgeInsets.all(4),
+                    margin: const EdgeInsets.only(right: 4),
+                    child: getIcon(hourlyData[index].id, isDaytime,
+                        width: 32, height: 32),
                   ),
-                  Row(
-                    children: [
-                      Container(
-                        padding: const EdgeInsets.all(4),
-                        child: SvgPicture.asset(
-                            weatherIcons + 'thermometer.svg',
-                            width: 32,
-                            height: 32),
-                      ),
-                      Container(
-                        padding: const EdgeInsets.all(4),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            const Text('Feels like'),
-                            Text(
-                                hourlyData[index].feelsLike.round().toString() +
-                                    getUnit(widget.forecastData.isImperial))
-                          ],
-                        ),
-                      )
-                    ],
+                  Container(
+                    padding: const EdgeInsets.all(4),
+                    child: Text(hourlyData[index].weather),
                   )
                 ],
               ),
-              // humidity, UV index
+              // humdity
               Row(
-                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                 children: [
-                  Row(
-                    children: [
-                      Container(
-                        padding: const EdgeInsets.all(4),
-                        child: SvgPicture.asset(weatherIcons + 'humidity.svg',
-                            width: 32, height: 32),
-                      ),
-                      Container(
-                        padding: const EdgeInsets.all(4),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            const Text('Humidity'),
-                            Text(hourlyData[index].humidity.round().toString() +
-                                '%')
-                          ],
-                        ),
-                      )
-                    ],
+                  Container(
+                    padding: const EdgeInsets.all(4),
+                    margin: const EdgeInsets.only(right: 4),
+                    child: SvgPicture.asset(weatherIcons + 'humidity.svg',
+                        width: 32, height: 32),
                   ),
-                  Row(
-                    children: [
-                      Container(
-                        padding: const EdgeInsets.all(4),
-                        child: SvgPicture.asset(weatherIcons + 'sun.svg',
-                            width: 32, height: 32),
-                      ),
-                      Container(
-                        padding: const EdgeInsets.all(4),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            const Text('UV Index'),
-                            Text(hourlyData[index].uvi.toString())
-                          ],
-                        ),
-                      )
-                    ],
+                  Container(
+                    padding: const EdgeInsets.all(4),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const Text('Humidity'),
+                        Text(
+                            hourlyData[index].humidity.round().toString() + '%')
+                      ],
+                    ),
                   )
                 ],
               ),
-              // wind, pressure
+              // wind
               Row(
-                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                 children: [
-                  Row(
-                    children: [
-                      Container(
-                        padding: const EdgeInsets.all(4),
-                        child: SvgPicture.asset(
-                          weatherIcons + 'windy.svg',
-                          width: 32,
-                          height: 32,
-                        ),
-                      ),
-                      Container(
-                          padding: const EdgeInsets.all(4),
-                          child: Column(
-                            children: [
-                              Text(hourlyData[index].windSpeed.toString() +
-                                  ' ' +
-                                  getSpeedUnit(widget.forecastData.isImperial)),
-                              Text(hourlyData[index].windDeg.toString() + 'º')
-                            ],
-                          ))
-                    ],
+                  Container(
+                    padding: const EdgeInsets.all(4),
+                    margin: const EdgeInsets.only(right: 4),
+                    child: SvgPicture.asset(
+                      weatherIcons + 'windy.svg',
+                      width: 32,
+                      height: 32,
+                    ),
                   ),
-                  Row(
-                    children: [
-                      Container(
-                          padding: const EdgeInsets.all(4),
-                          child: SvgPicture.asset(weatherIcons + 'compass.svg',
-                              width: 32, height: 32)),
-                      Container(
-                          padding: const EdgeInsets.all(4),
-                          child: Column(
-                            children: [
-                              const Text('Pressure'),
-                              Text(hourlyData[index].pressure.toString() +
-                                  ' ' +
-                                  'hPa')
-                            ],
-                          ))
-                    ],
-                  )
+                  Container(
+                      padding: const EdgeInsets.all(4),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(hourlyData[index].windSpeed.toString() +
+                              ' ' +
+                              getSpeedUnit(widget.forecastData.isImperial)),
+                          Text(hourlyData[index].windDeg.toString() + 'º')
+                        ],
+                      ))
                 ],
               )
             ],
-          ));
+          ),
+          // right column
+          Column(
+            children: [
+              // feels like
+              Row(
+                children: [
+                  Container(
+                    padding: const EdgeInsets.all(4),
+                    margin: const EdgeInsets.only(right: 4),
+                    child: SvgPicture.asset(weatherIcons + 'thermometer.svg',
+                        width: 32, height: 32),
+                  ),
+                  Container(
+                    padding: const EdgeInsets.all(4),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const Text('Feels like'),
+                        Text(hourlyData[index].feelsLike.round().toString() +
+                            getUnit(widget.forecastData.isImperial))
+                      ],
+                    ),
+                  )
+                ],
+              ),
+              // UV index
+              Row(
+                children: [
+                  Container(
+                    padding: const EdgeInsets.all(4),
+                    margin: const EdgeInsets.only(right: 4),
+                    child: SvgPicture.asset(weatherIcons + 'sun.svg',
+                        width: 32, height: 32),
+                  ),
+                  Container(
+                    padding: const EdgeInsets.all(4),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const Text('UV Index'),
+                        Text(hourlyData[index].uvi.toString())
+                      ],
+                    ),
+                  )
+                ],
+              ),
+              // pressure
+              Row(
+                children: [
+                  Container(
+                      padding: const EdgeInsets.all(4),
+                      margin: const EdgeInsets.only(right: 4),
+                      child: SvgPicture.asset(weatherIcons + 'compass.svg',
+                          width: 32, height: 32)),
+                  Container(
+                      padding: const EdgeInsets.all(4),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const Text('Pressure'),
+                          Text(hourlyData[index].pressure.toString() +
+                              ' ' +
+                              'hPa')
+                        ],
+                      ))
+                ],
+              )
+            ],
+          )
+        ]),
+      );
       return GestureDetector(
+        behavior: HitTestBehavior.opaque,
         child: Column(
           children: [mainBar, details],
         ),
@@ -371,6 +375,7 @@ class _ForecastPageState extends State<ForecastPage> {
       );
     } else {
       return GestureDetector(
+        behavior: HitTestBehavior.opaque,
         child: mainBar,
         onTap: () {
           setState(() {
