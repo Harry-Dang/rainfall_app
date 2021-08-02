@@ -131,3 +131,25 @@ String getUnit(bool isImperial) {
 String getSpeedUnit(bool isImperial) {
   return isImperial ? 'mph' : 'm/s';
 }
+
+String getWindDirection(double degrees) {
+  List<String> cardinal = [
+    'N',
+    'NNE',
+    'NE',
+    'ENE',
+    'E',
+    'ESE',
+    'SE',
+    'SSE',
+    'S',
+    'SSW',
+    'SW',
+    'WSW',
+    'W',
+    'WNW',
+    'NW',
+    'NNW'
+  ];
+  return cardinal[(degrees / (360 / cardinal.length)).round()];
+}

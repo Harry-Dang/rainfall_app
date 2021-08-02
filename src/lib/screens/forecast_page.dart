@@ -281,10 +281,12 @@ class _ForecastPageState extends State<ForecastPage> {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
+                          const Text('Wind'),
                           Text(hourlyData[index].windSpeed.toString() +
                               ' ' +
-                              getSpeedUnit(widget.forecastData.isImperial)),
-                          Text(hourlyData[index].windDeg.toString() + 'º')
+                              getSpeedUnit(widget.forecastData.isImperial) +
+                              ' ' +
+                              getWindDirection(hourlyData[index].windDeg))
                         ],
                       ))
                 ],
