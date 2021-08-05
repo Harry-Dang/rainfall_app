@@ -5,6 +5,8 @@ import 'package:src/forecast/forecast.dart';
 import 'package:src/util/dates_times.dart';
 import 'package:src/util/weather.dart';
 
+// const int hourlyMaxWidth = 225;
+const int hourlyMaxWidth = 240;
 const int hourlyMinWidth = 48;
 
 const int dailyMaxHeight = 160;
@@ -171,7 +173,9 @@ class _ForecastPageState extends State<ForecastPage> {
   Widget _buildHour(BuildContext context, int index) {
     List<HourlyForecast> hourlyData = widget.forecastData.hourlyData;
     String hour = getHour(hourlyData[index].time);
-    double hourlyMaxWidth = MediaQuery.of(context).size.shortestSide * 0.55;
+    // double hourlyMaxWidth = MediaQuery.of(context).size.shortestSide * 0.55;
+    double hourlyMaxWidth =
+        (MediaQuery.of(context).size.shortestSide / 100) * 55;
     double tempBar = (hourlyData[index].temp.round() -
             widget.forecastData.hourlyMin!.round()) /
         (widget.forecastData.hourlyMax!.round() -
@@ -673,11 +677,12 @@ class _ForecastPageState extends State<ForecastPage> {
     return GestureDetector(
       behavior: HitTestBehavior.opaque,
       child: Container(
-        padding: const EdgeInsets.all(8),
+        padding: const EdgeInsets.only(top: 8, bottom: 8),
+        width: 54,
         child: Column(
           children: [
             Container(
-              padding: const EdgeInsets.all(4),
+              margin: const EdgeInsets.all(4),
               child: Text(
                 getWeekday(dailyData.date),
                 style: const TextStyle(fontSize: 18),

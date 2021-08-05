@@ -32,6 +32,9 @@ String getTime(DateTime date) {
   } else if (date.hour < 12) {
     hour = date.hour.toString();
     period = 'AM';
+  } else if (date.hour == 12) {
+    hour = date.hour.toString();
+    period = 'PM';
   } else {
     hour = (date.hour - 12).toString();
     period = 'PM';
